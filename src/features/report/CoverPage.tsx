@@ -18,16 +18,14 @@ function CoverPage({ weekNumber, dateRange, totalNews, totalIssues }: CoverPageP
     >
       {/* Header / Logo Area */}
       <Box sx={{ mb: 6 }}>
-        <Typography
-          variant="h6"
+        <Box
+          component="img"
+          src="/logo.png"
+          alt="현대삼호중공업 로고"
           sx={{
-            fontWeight: 700,
-            color: 'primary.main',
-            letterSpacing: '0.1em',
+            height: 30,
           }}
-        >
-          HD HYUNDAI SAMHO
-        </Typography>
+        />
       </Box>
 
       {/* Center Content */}
@@ -37,54 +35,55 @@ function CoverPage({ weekNumber, dateRange, totalNews, totalIssues }: CoverPageP
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
-          alignItems: 'center',
-          textAlign: 'center',
+          alignItems: 'flex-start',
+          textAlign: 'left',
         }}
       >
         {/* Week Number Badge */}
         <Box
           sx={{
             mb: 3,
-            px: 3,
-            py: 1.5,
-            borderRadius: '8px',
+            px: 2,
+            py: 1,
+            borderRadius: '30px',
             bgcolor: 'primary.main',
             color: 'white',
           }}
         >
-          <Typography variant="h5" sx={{ fontWeight: 700 }}>
+          <Typography variant="body1" sx={{ fontWeight: 700 }}>
             {weekNumber}주차
           </Typography>
         </Box>
 
         {/* Main Title */}
         <Typography
-          variant="h3"
+          variant="h1"
           sx={{
-            fontWeight: 700,
+            fontWeight:700,
+            fontSize:'3.8rem',
             color: 'text.primary',
             mb: 4,
             lineHeight: 1.3,
           }}
         >
-          조선업 정보 주간 AI 리포트
+          조선업 정보 <br/>주간 AI 리포트
         </Typography>
 
         {/* Analysis Period */}
         <Typography
-          variant="h6"
+          variant="h5"
           sx={{
             color: 'text.secondary',
             mb: 6,
           }}
         >
-          분석 기간: {dateRange}
+          분석 기간 <br/>{dateRange}
         </Typography>
 
         {/* KPI Cards */}
         <Stack
           direction="row"
-          spacing={3}
+          spacing={5}
           sx={{
             width: '100%',
             maxWidth: '800px',
@@ -94,16 +93,29 @@ function CoverPage({ weekNumber, dateRange, totalNews, totalIssues }: CoverPageP
           {/* Total News Card */}
           <Card
             sx={{
-              flex: 1,
+              width: '210px',
+              height: '180px',
               p: 3,
-              borderRadius: '12px',
+              borderRadius: '8px',
               textAlign: 'center',
               boxShadow: 2,
               border: '1px solid rgba(0, 0, 0, 0.12)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
             }}
           >
             <Typography
-              variant="body2"
+              variant="h1"
+              sx={{
+                fontWeight: 700,
+                color: 'primary.main',
+              }}
+            >
+              {totalNews.toLocaleString()}
+            </Typography>
+            <Typography
+              variant="body1"
               sx={{
                 color: 'text.secondary',
                 mb: 1,
@@ -112,30 +124,34 @@ function CoverPage({ weekNumber, dateRange, totalNews, totalIssues }: CoverPageP
             >
               분석 뉴스
             </Typography>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 700,
-                color: 'primary.main',
-              }}
-            >
-              {totalNews.toLocaleString()}
-            </Typography>
           </Card>
 
           {/* Total Issues Card */}
           <Card
             sx={{
-              flex: 1,
+              width: '210px',
+              height: '180px',
               p: 3,
-              borderRadius: '12px',
+              borderRadius: '8px',
               textAlign: 'center',
               boxShadow: 2,
               border: '1px solid rgba(0, 0, 0, 0.12)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
             }}
           >
             <Typography
-              variant="body2"
+              variant="h1"
+              sx={{
+                fontWeight: 700,
+                color: 'secondary.main',
+              }}
+            >
+              {totalIssues.toLocaleString()}
+            </Typography>
+            <Typography
+              variant="body1"
               sx={{
                 color: 'text.secondary',
                 mb: 1,
@@ -144,30 +160,34 @@ function CoverPage({ weekNumber, dateRange, totalNews, totalIssues }: CoverPageP
             >
               핵심 이슈
             </Typography>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 700,
-                color: 'secondary.main',
-              }}
-            >
-              {totalIssues.toLocaleString()}
-            </Typography>
           </Card>
 
           {/* Analysis Sections Card */}
           <Card
             sx={{
-              flex: 1,
+              width: '210px',
+              height: '180px',
               p: 3,
-              borderRadius: '12px',
+              borderRadius: '8px',
               textAlign: 'center',
               boxShadow: 2,
               border: '1px solid rgba(0, 0, 0, 0.12)',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
             }}
           >
             <Typography
-              variant="body2"
+              variant="h1"
+              sx={{
+                fontWeight: 700,
+                color: 'text.primary',
+              }}
+            >
+              6
+            </Typography>
+            <Typography
+              variant="body1"
               sx={{
                 color: 'text.secondary',
                 mb: 1,
@@ -176,29 +196,30 @@ function CoverPage({ weekNumber, dateRange, totalNews, totalIssues }: CoverPageP
             >
               분석 섹션
             </Typography>
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: 700,
-                color: 'text.primary',
-              }}
-            >
-              6
-            </Typography>
           </Card>
         </Stack>
       </Box>
+      <hr/>
 
       {/* Footer */}
-      <Box sx={{ mt: 6, textAlign: 'center' }}>
+      <Box sx={{ mt: 6, textAlign: 'left' }}>
         <Typography
-          variant="body2"
+          variant="body1"
           sx={{
             color: 'text.secondary',
             fontWeight: 500,
           }}
         >
-          Provided by CG INSIDE
+          Provided by 
+        </Typography>
+        <Typography 
+          variant='h6'
+          sx={{
+            color:'primary.main',
+            fontWeight:700
+          }}  
+        >
+          CG INSIDE
         </Typography>
       </Box>
     </Box>

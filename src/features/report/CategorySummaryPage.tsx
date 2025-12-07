@@ -54,7 +54,7 @@ function CategorySummaryPage({ categoryLabel, clusters }: CategorySummaryPagePro
       {/* Clusters (Top 3 Issues) */}
       <Stack spacing={2}>
         {clusters.length === 0 ? (
-          <Card sx={{ p: 2, textAlign: 'center', borderRadius: '8px' }}>
+          <Card sx={{ p: 2, textAlign: 'center', borderRadius: '5px' }}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               이 카테고리에는 표시할 이슈가 없습니다.
             </Typography>
@@ -65,7 +65,7 @@ function CategorySummaryPage({ categoryLabel, clusters }: CategorySummaryPagePro
               key={cluster.id}
               sx={{
                 p: 2,
-                borderRadius: '8px',
+                borderRadius: '5px',
                 bgcolor: 'white',
                 boxShadow: 1,
               }}
@@ -134,7 +134,7 @@ function CategorySummaryPage({ categoryLabel, clusters }: CategorySummaryPagePro
                   sx={{
                     bgcolor: 'grey.50',
                     p: 1.5,
-                    borderRadius: '6px',
+                    borderRadius: '5px',
                   }}
                 >
                   <Typography

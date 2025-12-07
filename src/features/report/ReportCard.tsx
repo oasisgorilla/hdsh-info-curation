@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { Card, Box, Typography, IconButton, SvgIcon } from '@mui/material';
+import { Card, Box, Typography, Button, SvgIcon } from '@mui/material';
 import StatusBadge from '../../components/atomic/StatusBadge';
 import KeywordTag from '../../components/atomic/KeywordTag';
 import IssueBar from './IssueBar';
@@ -21,7 +20,6 @@ export type ReportCardProps = {
   status: '완료됨' | '읽음';
   keywords: string[];
   categories: CategoryIssue[];
-  onDownload?: () => void;
   onToggle?: () => void;
 };
 
@@ -31,10 +29,8 @@ function ReportCard({
   status,
   keywords,
   categories,
-  onDownload,
   onToggle
 }: ReportCardProps) {
-  const [isHovered, setIsHovered] = useState(false);
 
   return (
     <Card
@@ -51,7 +47,6 @@ function ReportCard({
         sx={{
           display: 'flex',
           flexDirection: { xs: 'column', md: 'row' },
-          gap: 3,
         }}
       >
         {/* Left: Week Info */}
@@ -61,7 +56,7 @@ function ReportCard({
             alignItems: 'center',
             gap: 2,
             p: 3,
-            borderRadius: 2,
+            borderRadius: '5px',
             background: colors.ui.gradient.weekBadge,
             flexShrink: 0,
             width: { xs: '100%', md: '200px' },
@@ -123,37 +118,20 @@ function ReportCard({
               </Typography>
               <StatusBadge status={status} />
             </Box>
-            {onDownload && (
-              <IconButton
-                onClick={onDownload}
-                onMouseEnter={() => setIsHovered(true)}
-                onMouseLeave={() => setIsHovered(false)}
+            {onToggle && (
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={onToggle}
                 sx={{
-                  transition: 'all 0.2s',
-                  '&:hover': {
-                    bgcolor: colors.grey[100],
-                  },
+                  textTransform: 'none',
+                  fontWeight: 500,
+                  px: 2.5,
+                  py: 1,
                 }}
-                aria-label="리포트 다운로드"
               >
-                <SvgIcon sx={{ width: 20, height: 20 }}>
-                  <svg viewBox="0 0 20 20" fill="none">
-                    <path
-                      d="M10 2v10M10 12l3-3M10 12l-3-3"
-                      stroke={isHovered ? colors.ui.success : colors.grey[600]}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <path
-                      d="M4 16h12"
-                      stroke={isHovered ? colors.ui.success : colors.grey[600]}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </SvgIcon>
-              </IconButton>
+                리포트 열기
+              </Button>
             )}
           </Box>
 
@@ -194,68 +172,6 @@ function ReportCard({
               </Box>
             ))}
           </Box>
-        </Box>
-
-        {/* Toggle Button */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { md: 'column' },
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderTop: { xs: 1, md: 0 },
-            borderLeft: { md: 1 },
-            borderColor: 'divider',
-          }}
-        >
-          <IconButton
-            onClick={onToggle}
-            sx={{
-              display: 'flex',
-              flexDirection: { md: 'column' },
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 1,
-              p: { xs: 2, md: 3 },
-              width: '100%',
-              color: 'text.secondary',
-              borderRadius: 0,
-              transition: 'all 0.2s',
-              '&:hover': {
-                color: 'primary.main',
-                bgcolor: 'grey.50',
-              },
-            }}
-            aria-label="리포트 열기"
-          >
-            <Typography
-              variant="caption"
-              sx={{
-                fontWeight: 500,
-                writingMode: { md: 'vertical-rl' },
-                textOrientation: { md: 'mixed' },
-              }}
-            >
-              리포트 열기
-            </Typography>
-            <SvgIcon
-              sx={{
-                width: 16,
-                height: 16,
-                transform: { md: 'rotate(90deg)' },
-              }}
-            >
-              <svg viewBox="0 0 16 16" fill="none">
-                <path
-                  d="M6 4l4 4-4 4"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </SvgIcon>
-          </IconButton>
         </Box>
       </Box>
     </Card>

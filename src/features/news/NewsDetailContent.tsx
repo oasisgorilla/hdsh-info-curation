@@ -139,7 +139,7 @@ function NewsDetailContent({ news }: NewsDetailContentProps) {
               p: 3,
               mb: 4,
               bgcolor: "grey.50",
-              borderRadius: 2,
+              borderRadius: '5px',
               borderLeft: 4,
               borderColor: "primary.main",
             }}

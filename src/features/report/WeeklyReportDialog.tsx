@@ -2,7 +2,6 @@ import { useRef, useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
-  Button,
   Box,
   CircularProgress,
   Alert,
@@ -224,21 +223,17 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
         <Box sx={{ flexGrow: 1 }} />
 
         {/* PDF Download Button */}
-        <Button
-          variant="contained"
-          color="primary"
-          size="small"
-          startIcon={<DownloadIcon />}
-          disabled={loading || error !== null || clusters.length === 0 || pdfGenerating}
-          onClick={handleDownloadPDF}
-          sx={{
-            borderRadius: '8px',
-            textTransform: 'none',
-            fontWeight: 600,
-          }}
-        >
-          {pdfGenerating ? 'PDF 생성 중...' : 'PDF 다운로드'}
-        </Button>
+        <Tooltip title={pdfGenerating ? 'PDF 생성 중...' : 'PDF 다운로드'}>
+          <IconButton
+            size="small"
+            onClick={handleDownloadPDF}
+            disabled={loading || error !== null || clusters.length === 0 || pdfGenerating}
+          >
+            <DownloadIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+
+        <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
 
         {/* Close Button */}
         <Tooltip title="닫기">
