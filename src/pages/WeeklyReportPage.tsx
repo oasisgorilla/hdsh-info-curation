@@ -4,7 +4,6 @@ import Header from '../components/common/Header';
 import ReportHeroBanner from '../features/report/ReportHeroBanner';
 import ReportCount from '../features/report/ReportCount';
 import ReportCard, { type CategoryIssue } from '../features/report/ReportCard';
-import Pagination from '../components/common/Pagination';
 import WeeklyReportDialog from '../features/report/WeeklyReportDialog';
 import { fetchReport } from '../services/reportService';
 import { extractTopKeywords, groupIssuesByCategory, getMaxIssueSize } from '../utils/reportHelpers';
@@ -19,11 +18,10 @@ type ReportData = {
 
 function WeeklyReportPage() {
   const [activeTab, setActiveTab] = useState('주간 보고서');
-  const [currentPage, setCurrentPage] = useState(1);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const totalPages = 12;
+  const [totalReports, setTotalReports] = useState(0);
 
   // Dialog state for Weekly Report Dialog
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -58,6 +56,7 @@ function WeeklyReportPage() {
           };
 
           setReportData(report);
+          setTotalReports(1); // Currently only 1 report available
         } else {
           setError(response.error || '데이터를 불러올 수 없습니다.');
         }
@@ -82,18 +81,13 @@ function WeeklyReportPage() {
     setDialogOpen(true);
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
       <Header activeTab={activeTab} onTabChange={setActiveTab} />
       <ReportHeroBanner />
       <Container component="main" maxWidth="lg" sx={{ py: 4 }}>
         <Box sx={{ mb: 3 }}>
-          <ReportCount count={48} withIcon={true} />
+          <ReportCount count={totalReports} withIcon={true} />
         </Box>
 
         {/* Loading State */}
@@ -112,33 +106,24 @@ function WeeklyReportPage() {
 
         {/* Report Data */}
         {!loading && !error && reportData && (
-          <>
-            <Stack spacing={3}>
-              <ReportCard
-                weekNumber={reportData.weekNumber}
-                dateRange={reportData.dateRange}
-                status={reportData.status}
-                keywords={reportData.keywords}
-                categories={reportData.categories.map(category => ({
-                  ...category,
-                  issues: category.issues.map(issue => ({
-                    ...issue,
-                    // Normalize size relative to maxSize
-                    size: issue.size
-                  }))
-                }))}
-                onDownload={() => handleDownload(reportData.weekNumber)}
-                onToggle={() => handleToggle()}
-              />
-            </Stack>
-            <Box sx={{ mt: 6 }}>
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            </Box>
-          </>
+          <Stack spacing={3}>
+            <ReportCard
+              weekNumber={reportData.weekNumber}
+              dateRange={reportData.dateRange}
+              status={reportData.status}
+              keywords={reportData.keywords}
+              categories={reportData.categories.map(category => ({
+                ...category,
+                issues: category.issues.map(issue => ({
+                  ...issue,
+                  // Normalize size relative to maxSize
+                  size: issue.size
+                }))
+              }))}
+              onDownload={() => handleDownload(reportData.weekNumber)}
+              onToggle={() => handleToggle()}
+            />
+          </Stack>
         )}
       </Container>
 
