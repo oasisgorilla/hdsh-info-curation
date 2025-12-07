@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Box, Container, CircularProgress, Typography } from "@mui/material";
 import Header from "../components/common/Header";
 import HeroBanner from "../features/news/HeroBanner";
@@ -25,6 +25,7 @@ function MainPage() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [currentPage, setCurrentPage] = useState(1);
   const [newsList, setNewsList] = useState<NewsItem[]>([]);
+  const [allSearchResults, setAllSearchResults] = useState<NewsItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,6 +33,18 @@ function MainPage() {
   const [isSearchMode, setIsSearchMode] = useState(false);
 
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
+
+  // 현재 페이지에 표시할 데이터 계산
+  const displayedNews = useMemo(() => {
+    if (isSearchMode) {
+      // 검색 모드: 전체 결과를 슬라이싱
+      const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+      const endIndex = startIndex + ITEMS_PER_PAGE;
+      return allSearchResults.slice(startIndex, endIndex);
+    }
+    // 일반 모드: API에서 이미 페이지별 데이터를 받음
+    return newsList;
+  }, [isSearchMode, allSearchResults, newsList, currentPage]);
 
   useEffect(() => {
     const loadNews = async () => {
@@ -43,7 +56,7 @@ function MainPage() {
           // 검색 모드
           const response = await searchNews({
             q: searchQuery,
-            limit: 100,
+            limit: 500,
           });
 
           // SearchNewsItem을 NewsItem으로 변환
@@ -64,7 +77,7 @@ function MainPage() {
             );
           }
 
-          setNewsList(convertedItems);
+          setAllSearchResults(convertedItems);
           setTotalCount(convertedItems.length);
         } else {
           // 일반 목록 조회 모드
@@ -93,7 +106,8 @@ function MainPage() {
     };
 
     loadNews();
-  }, [selectedCategory, currentPage, isSearchMode, searchQuery]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, isSearchMode, searchQuery, ...(!isSearchMode ? [currentPage] : [])]);
 
   const handleSearch = (query: string) => {
     if (query.trim()) {
@@ -104,6 +118,7 @@ function MainPage() {
       setSearchQuery("");
       setIsSearchMode(false);
       setCurrentPage(1);
+      setAllSearchResults([]);
     }
   };
 
@@ -141,7 +156,7 @@ function MainPage() {
           </Box>
         ) : (
           <>
-            <NewsGrid news={newsList} />
+            <NewsGrid news={displayedNews} />
             {totalPages > 0 && (
               <Box sx={{ mt: 6 }}>
                 <Pagination

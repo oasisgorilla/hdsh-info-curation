@@ -21,6 +21,7 @@ export type ReportCardProps = {
   keywords: string[];
   categories: CategoryIssue[];
   onToggle?: () => void;
+  onDownload?: () => void;
 };
 
 function ReportCard({

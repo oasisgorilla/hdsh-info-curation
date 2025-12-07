@@ -1,7 +1,43 @@
 import { Box, Typography, Stack } from '@mui/material';
 import { colors } from '../../styles/colors';
 
-function TableOfContentsPage() {
+export type TOCCategory = {
+  id: number;
+  label: '국내동향' | '해외동향' | '중국동향' | '원자재RISK' | '기술R&D' | '정책규제';
+  pageNumber: number;
+};
+
+type TableOfContentsPageProps = {
+  categories: TOCCategory[];
+};
+
+// 카테고리별 설명 매핑
+const getCategoryDescription = (label: TOCCategory['label']): string => {
+  const descriptionMap: Record<TOCCategory['label'], string> = {
+    '국내동향': '주요 수주 및 기술 개발',
+    '중국동향': '경쟁 전략 분석',
+    '해외동향': '글로벌 시장 변화',
+    '원자재RISK': '가격 및 시장 리스크',
+    '기술R&D': '혁신 기술 개발',
+    '정책규제': '규제 및 지원 정책',
+  };
+  return descriptionMap[label] || '';
+};
+
+// 카테고리별 표시 이름 매핑
+const getCategoryDisplayName = (label: TOCCategory['label']): string => {
+  const displayNameMap: Record<TOCCategory['label'], string> = {
+    '국내동향': '국내 조선업 동향',
+    '중국동향': '중국 조선업 동향',
+    '해외동향': '해외 조선업 동향',
+    '원자재RISK': '원자재·리스크 동향',
+    '기술R&D': '기술·R&D 동향',
+    '정책규제': '정책·규제 동향',
+  };
+  return displayNameMap[label] || label;
+};
+
+function TableOfContentsPage({ categories }: TableOfContentsPageProps) {
   return (
     <Box
       className="report-page"
@@ -166,16 +202,9 @@ function TableOfContentsPage() {
         </Box>
 
         {/* Category Pages */}
-        {[
-          { number: 3, label: '국내 조선업 동향', description: '주요 수주 및 기술 개발', page: 3 },
-          { number: 4, label: '중국 조선업 동향', description: '경쟁 전략 분석', page: 4 },
-          { number: 5, label: '해외 조선업 동향', description: '글로벌 시장 변화', page: 5 },
-          { number: 6, label: '원자재·리스크 동향', description: '가격 및 시장 리스크', page: 6 },
-          { number: 7, label: '기술·R&D 동향', description: '혁신 기술 개발', page: 7 },
-          { number: 8, label: '정책·규제 동향', description: '규제 및 지원 정책', page: 8 },
-        ].map((item) => (
+        {categories.map((item) => (
           <Box
-            key={item.number}
+            key={item.id}
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -210,12 +239,12 @@ function TableOfContentsPage() {
                     color: colors.text.primary,
                   }}
                 >
-                  {item.number}
+                  {item.id}
                 </Typography>
               </Box>
               <Box>
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  {item.label}
+                  {getCategoryDisplayName(item.label)}
                 </Typography>
                 <Typography
                   variant="body2"
@@ -224,12 +253,12 @@ function TableOfContentsPage() {
                     mt: 0.3,
                   }}
                 >
-                  {item.description}
+                  {getCategoryDescription(item.label)}
                 </Typography>
               </Box>
             </Box>
             <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.secondary' }}>
-              p. {item.page}
+              p. {item.pageNumber}
             </Typography>
           </Box>
         ))}
