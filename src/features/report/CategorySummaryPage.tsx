@@ -108,16 +108,14 @@ function CategorySummaryPage({
 
         {/* Mini Logo (PDF mode only) */}
         {!isPreview && (
-          <Typography
-            variant="caption"
+          <Box
+            component="img"
+            src="/logo.png"
+            alt="HD SAMHO 로고"
             sx={{
-              fontWeight: 600,
-              color: 'text.secondary',
-              letterSpacing: '0.05em',
+              height: 20,
             }}
-          >
-            HD SAMHO
-          </Typography>
+          />
         )}
       </Box>
 
