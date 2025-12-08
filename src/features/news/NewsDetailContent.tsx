@@ -196,7 +196,7 @@ function NewsDetailContent({ news }: NewsDetailContentProps) {
             >
               <Chip
                 label="원문 기사 보기"
-                icon={<OpenInNewIcon />}
+                icon={<OpenInNewIcon sx={{ color: "white !important" }} />}
                 clickable
                 sx={{
                   bgcolor: "primary.main",
