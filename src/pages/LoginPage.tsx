@@ -84,32 +84,19 @@ function LoginPage() {
               mx: 'auto',
               mb: 2,
               bgcolor: 'white',
-              borderRadius: 4,
+              borderRadius: 0.3,
               boxShadow: 3,
             }}
           >
-            <Box
+            <Box 
+              component="img"
+              src="/logo4x3.png"
+              alt="현대삼호중공업 로고"
               sx={{
                 width: 48,
-                height: 48,
-                background: colors.ui.gradient.secondary,
-                borderRadius: 3,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                height: 48
               }}
-            >
-              <SvgIcon sx={{ width: 28, height: 28, color: 'white' }} aria-hidden="true">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                  />
-                </svg>
-              </SvgIcon>
-            </Box>
+            />
           </Box>
           <Typography
             variant="h5"
@@ -118,12 +105,12 @@ function LoginPage() {
             현대삼호중공업
           </Typography>
           <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 0.5 }}>
-            정보 큐레이션 시스템
+            조선업 정보 큐레이션 AI
           </Typography>
         </Box>
 
         {/* Login card */}
-        <Card sx={{ borderRadius: 4, boxShadow: 6, p: 4 }}>
+        <Card sx={{ borderRadius: 0.5, boxShadow: 6, p: 4 }}>
           <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
             로그인
           </Typography>
