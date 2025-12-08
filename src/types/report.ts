@@ -63,6 +63,7 @@ export interface CategorySummaryPageProps {
   categoryId: number;
   categoryLabel: string;
   clusters: ClusteredNewsRead[]; // Current page clusters (max 3)
+  clusterStartIndex?: number; // Starting index for cluster numbering (default: 0)
   currentPage?: number; // 1-based, current page number
   totalPages?: number; // Total pages for this category
   onPageChange?: (page: number) => void; // Callback for page navigation (web view only)

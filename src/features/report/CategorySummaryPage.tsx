@@ -7,6 +7,7 @@ import type { CategorySummaryPageProps } from '../../types/report';
 function CategorySummaryPage({
   categoryLabel,
   clusters,
+  clusterStartIndex = 0,
   currentPage = 1,
   totalPages = 1,
   onPageChange,
@@ -150,7 +151,7 @@ function CategorySummaryPage({
                     fontSize: '0.95rem',
                   }}
                 >
-                  {index + 1}. {cluster.representative_title}
+                  {clusterStartIndex + index + 1}. {cluster.representative_title}
                 </Typography>
 
                 {/* Meta Info (Score + Size) */}

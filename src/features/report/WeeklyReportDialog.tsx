@@ -505,6 +505,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
                       categoryId={catId}
                       categoryLabel={categoryLabel}
                       clusters={pageClusters}
+                      clusterStartIndex={i}
                       currentPage={pageNum}
                       totalPages={totalCategoryPages}
                       isPreview={false}
@@ -524,6 +525,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
                     categoryId={catId}
                     categoryLabel={categoryLabel}
                     clusters={pageClusters}
+                    clusterStartIndex={startIdx}
                     currentPage={currentCategoryPage}
                     totalPages={totalCategoryPages}
                     onPageChange={(page) => handleCategoryPageChange(catId, page)}
