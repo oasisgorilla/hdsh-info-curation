@@ -1,7 +1,14 @@
 import { Box, Typography, Card, Stack, Chip } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import type { CategorySummaryPageProps } from '../../types/report';
 
 function CategorySummaryPage({ categoryLabel, clusters }: CategorySummaryPageProps) {
+  const navigate = useNavigate();
+
+  const handleNewsClick = (newsId: string) => {
+    navigate(`/news/${newsId}`);
+  };
+
   return (
     <Box
       className="report-page"
@@ -182,25 +189,21 @@ function CategorySummaryPage({ categoryLabel, clusters }: CategorySummaryPagePro
                           >
                             {item.title}
                           </Typography>
-                          {item.origin_url && (
-                            <Typography
-                              component="a"
-                              href={item.origin_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              sx={{
-                                fontSize: '0.7rem',
-                                color: 'primary.main',
-                                textDecoration: 'none',
-                                flexShrink: 0,
-                                '&:hover': {
-                                  textDecoration: 'underline',
-                                },
-                              }}
-                            >
-                              바로가기
-                            </Typography>
-                          )}
+                          <Typography
+                            onClick={() => handleNewsClick(item.news_id)}
+                            sx={{
+                              fontSize: '0.7rem',
+                              color: 'primary.main',
+                              textDecoration: 'none',
+                              flexShrink: 0,
+                              cursor: 'pointer',
+                              '&:hover': {
+                                textDecoration: 'underline',
+                              },
+                            }}
+                          >
+                            바로가기
+                          </Typography>
                         </Box>
                       </Box>
                     ))}
