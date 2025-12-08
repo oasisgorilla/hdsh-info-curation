@@ -1,14 +1,7 @@
 import { Box, Typography, Card, Stack, Chip } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import type { CategorySummaryPageProps } from '../../types/report';
 
 function CategorySummaryPage({ categoryLabel, clusters }: CategorySummaryPageProps) {
-  const navigate = useNavigate();
-
-  const handleNewsClick = (newsId: string) => {
-    navigate(`/news/${newsId}`);
-  };
-
   return (
     <Box
       className="report-page"
@@ -189,21 +182,35 @@ function CategorySummaryPage({ categoryLabel, clusters }: CategorySummaryPagePro
                           >
                             {item.title}
                           </Typography>
-                          <Typography
-                            onClick={() => handleNewsClick(item.news_id)}
-                            sx={{
-                              fontSize: '0.7rem',
-                              color: 'primary.main',
-                              textDecoration: 'none',
-                              flexShrink: 0,
-                              cursor: 'pointer',
-                              '&:hover': {
-                                textDecoration: 'underline',
-                              },
-                            }}
-                          >
-                            바로가기
-                          </Typography>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Typography
+                              component="a"
+                              href={`${window.location.origin}/news/${item.news_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              sx={{
+                                fontSize: '0.7rem',
+                                color: 'primary.main',
+                                textDecoration: 'none',
+                                flexShrink: 0,
+                                cursor: 'pointer',
+                                '&:hover': {
+                                  textDecoration: 'underline',
+                                },
+                              }}
+                            >
+                              바로가기
+                            </Typography>
+                            <Typography
+                              sx={{
+                                fontSize: '0.65rem',
+                                color: 'text.secondary',
+                                fontWeight: 500,
+                              }}
+                            >
+                              (Ctrl+클릭)
+                            </Typography>
+                          </Box>
                         </Box>
                       </Box>
                     ))}
