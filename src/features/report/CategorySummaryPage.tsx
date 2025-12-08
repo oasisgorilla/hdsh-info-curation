@@ -1,162 +1,75 @@
-import { Box, Typography, Card, Stack, Chip, IconButton } from '@mui/material';
-import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon } from '@mui/icons-material';
-import { useState, useMemo, useEffect } from 'react';
-import type { CategorySummaryPageProps, ClusterPart } from '../../types/report';
+import { Box, Typography, Card, Stack, Chip } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import type { CategorySummaryPageProps } from '../../types/report';
 
-interface ClusterCarouselState {
-  currentPage: number; // 0-based
-  totalPages: number; // Math.ceil(items.length / 3)
-}
+function CategorySummaryPage({ categoryLabel, clusters }: CategorySummaryPageProps) {
+  const navigate = useNavigate();
 
-function CategorySummaryPage({
-  categoryLabel,
-  clusters,
-  clusterParts,
-  pdfGenerating = false,
-  showHeader = true
-}: CategorySummaryPageProps) {
-  // Initialize carousel states with useMemo to avoid setState in useEffect
-  const initialCarouselStates = useMemo(() => {
-    if (!clusters) return {};
-    return clusters.reduce((acc, cluster) => {
-      acc[cluster.id] = {
-        currentPage: 0,
-        totalPages: Math.max(1, Math.ceil(cluster.items.length / 3))
-      };
-      return acc;
-    }, {} as Record<number, ClusterCarouselState>);
-  }, [clusters]);
-
-  const [carouselStates, setCarouselStates] = useState(initialCarouselStates);
-
-  // Update carousel states when clusters change
-  useEffect(() => {
-    setCarouselStates(initialCarouselStates);
-  }, [initialCarouselStates]);
-
-  // Determine which data source to use
-  const displayItems = useMemo((): ClusterPart[] => {
-    if (pdfGenerating && clusterParts) {
-      return clusterParts;
-    }
-
-    // Legacy mode: convert clusters to ClusterPart format for screen mode
-    if (clusters) {
-      return clusters.map((cluster) => ({
-        originalClusterId: cluster.id,
-        category_id: cluster.category_id,
-        representative_title: cluster.representative_title,
-        score: cluster.score,
-        size: cluster.size,
-        summary: cluster.summary,
-        items: cluster.items,
-        isFirstPart: true,
-        isContinuation: false,
-        partNumber: 1,
-        totalParts: 1,
-        itemStartIndex: 0,
-        itemEndIndex: cluster.items.length,
-      }));
-    }
-
-    return [];
-  }, [pdfGenerating, clusterParts, clusters]);
-
-  // Helper functions
-  const getCurrentPageItems = (items: ClusterPart['items'], clusterId: number) => {
-    const state = carouselStates[clusterId];
-    if (!state) return items.slice(0, 3);
-    const start = state.currentPage * 3;
-    return items.slice(start, start + 3);
+  const handleNewsClick = (newsId: string) => {
+    navigate(`/news/${newsId}`);
   };
 
-  const handlePrevPage = (clusterId: number) => {
-    setCarouselStates(prev => ({
-      ...prev,
-      [clusterId]: {
-        ...prev[clusterId],
-        currentPage: Math.max(0, prev[clusterId].currentPage - 1)
-      }
-    }));
-  };
-
-  const handleNextPage = (clusterId: number) => {
-    setCarouselStates(prev => ({
-      ...prev,
-      [clusterId]: {
-        ...prev[clusterId],
-        currentPage: Math.min(
-          prev[clusterId].totalPages - 1,
-          prev[clusterId].currentPage + 1
-        )
-      }
-    }));
-  };
   return (
     <Box
       className="report-page"
       sx={{
         width: '210mm',
-        // 인쇄 모드에서만 고정 높이, 화면 모드에서는 자동 높이
-        height: pdfGenerating ? '297mm' : 'auto',
-        minHeight: pdfGenerating ? '297mm' : 'auto',
+        height: '297mm',
         display: 'flex',
         flexDirection: 'column',
         bgcolor: 'grey.50',
         p: 4,
         boxSizing: 'border-box',
-        overflow: pdfGenerating ? 'hidden' : 'visible',
+        overflow: 'hidden',
       }}
     >
-      {/* Header Bar - only show on first page */}
-      {showHeader && (
-        <Box
+      {/* Header Bar */}
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2,
+          pb: 1,
+          borderBottom: '2px solid',
+          borderColor: 'primary.main',
+        }}
+      >
+        <Typography
+          variant="h5"
           sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 2,
-            pb: 1,
-            borderBottom: '2px solid',
-            borderColor: 'primary.main',
+            fontWeight: 700,
+            color: 'primary.main',
           }}
         >
-          <Typography
-            variant="h5"
-            sx={{
-              fontWeight: 700,
-              color: 'primary.main',
-            }}
-          >
-            {categoryLabel}
-          </Typography>
+          {categoryLabel}
+        </Typography>
 
-          {/* Mini Logo */}
-          <Typography
-            variant="caption"
-            sx={{
-              fontWeight: 600,
-              color: 'text.secondary',
-              letterSpacing: '0.05em',
-            }}
-          >
-            HD SAMHO
-          </Typography>
-        </Box>
-      )}
+        {/* Mini Logo */}
+        <Typography
+          variant="caption"
+          sx={{
+            fontWeight: 600,
+            color: 'text.secondary',
+            letterSpacing: '0.05em',
+          }}
+        >
+          HD SAMHO
+        </Typography>
+      </Box>
 
       {/* Clusters (Top 3 Issues) */}
       <Stack spacing={2}>
-        {displayItems.length === 0 ? (
+        {clusters.length === 0 ? (
           <Card sx={{ p: 2, textAlign: 'center', borderRadius: '5px' }}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               이 카테고리에는 표시할 이슈가 없습니다.
             </Typography>
           </Card>
         ) : (
-          displayItems.map((item, displayIndex) => (
+          clusters.map((cluster, index) => (
             <Card
-              key={`${item.originalClusterId}-${item.partNumber}`}
+              key={cluster.id}
               sx={{
                 p: 2,
                 borderRadius: '5px',
@@ -175,55 +88,40 @@ function CategorySummaryPage({
                     fontSize: '0.95rem',
                   }}
                 >
-                  {displayIndex + 1}. {item.representative_title}
-                  {item.totalParts > 1 && (
-                    <Typography
-                      component="span"
-                      sx={{
-                        ml: 1,
-                        fontSize: '0.75rem',
-                        color: 'text.secondary',
-                        fontWeight: 500,
-                      }}
-                    >
-                      ({item.partNumber}/{item.totalParts})
-                    </Typography>
-                  )}
+                  {index + 1}. {cluster.representative_title}
                 </Typography>
 
-                {/* Meta Info (Score + Size) - only show on first part */}
-                {item.isFirstPart && (
-                  <Stack direction="row" spacing={0.5} sx={{ mb: 1 }}>
-                    {item.score !== null && (
-                      <Chip
-                        label={`점수: ${item.score.toFixed(1)}`}
-                        size="small"
-                        sx={{
-                          bgcolor: 'primary.main',
-                          color: 'white',
-                          fontWeight: 600,
-                          fontSize: '0.7rem',
-                          height: '20px',
-                        }}
-                      />
-                    )}
+                {/* Meta Info (Score + Size) */}
+                <Stack direction="row" spacing={0.5} sx={{ mb: 1 }}>
+                  {cluster.score !== null && (
                     <Chip
-                      label={`이슈 규모: ${item.size}건`}
+                      label={`점수: ${cluster.score.toFixed(1)}`}
                       size="small"
                       sx={{
-                        bgcolor: 'secondary.light',
+                        bgcolor: 'primary.main',
                         color: 'white',
                         fontWeight: 600,
                         fontSize: '0.7rem',
                         height: '20px',
                       }}
                     />
-                  </Stack>
-                )}
+                  )}
+                  <Chip
+                    label={`이슈 규모: ${cluster.size}건`}
+                    size="small"
+                    sx={{
+                      bgcolor: 'secondary.light',
+                      color: 'white',
+                      fontWeight: 600,
+                      fontSize: '0.7rem',
+                      height: '20px',
+                    }}
+                  />
+                </Stack>
               </Box>
 
-              {/* Summary - only show on first part */}
-              {item.isFirstPart && item.summary && (
+              {/* Summary */}
+              {cluster.summary && (
                 <Typography
                   variant="body2"
                   sx={{
@@ -233,280 +131,84 @@ function CategorySummaryPage({
                     fontSize: '0.85rem',
                   }}
                 >
-                  {item.summary}
+                  {cluster.summary}
                 </Typography>
               )}
 
-              {/* Continuation indicator */}
-              {item.isContinuation && (
-                <Typography
-                  variant="caption"
+              {/* News Items (Max 3) */}
+              {cluster.items.length > 0 && (
+                <Box
                   sx={{
-                    color: 'text.secondary',
-                    mb: 1,
-                    display: 'block',
-                    fontStyle: 'italic',
+                    bgcolor: 'grey.50',
+                    p: 1.5,
+                    borderRadius: '5px',
                   }}
                 >
-                  (이전 페이지에서 계속)
-                </Typography>
-              )}
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontWeight: 600,
+                      color: 'text.secondary',
+                      mb: 1,
+                      display: 'block',
+                    }}
+                  >
+                    관련 뉴스 ({Math.min(cluster.items.length, 3)}건)
+                  </Typography>
 
-              {/* News Items - Carousel for screen, all items for PDF */}
-              {item.items.length > 0 && (
-                <>
-                  {pdfGenerating ? (
-                    // PDF Mode: Show all news items
-                    <Box
-                      sx={{
-                        bgcolor: 'grey.50',
-                        p: 1.5,
-                        borderRadius: '5px',
-                      }}
-                    >
-                      <Typography
-                        variant="caption"
+                  <Stack spacing={0.75}>
+                    {cluster.items.map((item, itemIndex) => (
+                      <Box
+                        key={item.news_id}
                         sx={{
-                          fontWeight: 600,
-                          color: 'text.secondary',
-                          mb: 1,
-                          display: 'block',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 0.5,
                         }}
                       >
-                        관련 뉴스 ({item.items.length}건)
-                        {item.totalParts > 1 && ` - ${item.itemStartIndex + 1}~${item.itemEndIndex}번`}
-                      </Typography>
-
-                      <Stack spacing={0.75}>
-                        {item.items.map((newsItem, itemIndex) => {
-                          const globalIndex = item.itemStartIndex + itemIndex;
-                          return (
-                            <Box
-                              key={newsItem.news_id}
-                              sx={{
-                                display: 'flex',
-                                alignItems: 'flex-start',
-                                gap: 0.5,
-                              }}
-                            >
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  color: 'text.secondary',
-                                  flexShrink: 0,
-                                  minWidth: '16px',
-                                  fontSize: '0.75rem',
-                                }}
-                              >
-                                {globalIndex + 1}.
-                              </Typography>
-                              <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    color: 'text.primary',
-                                    lineHeight: 1.4,
-                                    fontSize: '0.75rem',
-                                    flex: 1,
-                                  }}
-                                >
-                                  {newsItem.title}
-                                </Typography>
-                                <Typography
-                                  component="a"
-                                  href={`${window.location.origin}/news/${newsItem.news_id}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  sx={{
-                                    fontSize: '0.7rem',
-                                    color: 'primary.main',
-                                    textDecoration: 'none',
-                                    flexShrink: 0,
-                                    cursor: 'pointer',
-                                    '&:hover': {
-                                      textDecoration: 'underline',
-                                    },
-                                  }}
-                                >
-                                  바로가기
-                                </Typography>
-                              </Box>
-                            </Box>
-                          );
-                        })}
-                      </Stack>
-                    </Box>
-                  ) : (
-                    // Screen Mode: Carousel with arrows
-                    <>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: '100%' }}>
-                        {/* Left Arrow */}
-                        <Box component="span">
-                          <IconButton
-                            onClick={() => handlePrevPage(item.originalClusterId)}
-                            disabled={!carouselStates[item.originalClusterId] || carouselStates[item.originalClusterId].currentPage === 0}
-                            size="small"
-                            sx={{
-                              minWidth: '40px',
-                              height: '40px',
-                              border: '1px solid',
-                              borderColor: 'grey.300',
-                              bgcolor: 'white',
-                              '&:hover': { bgcolor: 'grey.100' },
-                              '&.Mui-disabled': {
-                                bgcolor: 'grey.100',
-                                borderColor: 'grey.200',
-                                opacity: 0.5
-                              }
-                            }}
-                          >
-                            <ChevronLeftIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
-
-                        {/* News Items Box (80% width) */}
-                        <Box
-                          sx={{
-                            width: '80%',
-                            bgcolor: 'grey.50',
-                            p: 1.5,
-                            borderRadius: '5px',
-                          }}
-                        >
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              fontWeight: 600,
-                              color: 'text.secondary',
-                              mb: 1,
-                              display: 'block',
-                            }}
-                          >
-                            관련 뉴스 ({item.items.length}건)
-                          </Typography>
-
-                          <Stack spacing={0.75}>
-                            {getCurrentPageItems(item.items, item.originalClusterId).map((newsItem, itemIndex) => {
-                              const state = carouselStates[item.originalClusterId] || { currentPage: 0 };
-                              const actualIndex = state.currentPage * 3 + itemIndex;
-                              return (
-                                <Box
-                                  key={newsItem.news_id}
-                                  sx={{
-                                    display: 'flex',
-                                    alignItems: 'flex-start',
-                                    gap: 0.5,
-                                  }}
-                                >
-                                  <Typography
-                                    variant="caption"
-                                    sx={{
-                                      color: 'text.secondary',
-                                      flexShrink: 0,
-                                      minWidth: '16px',
-                                      fontSize: '0.75rem',
-                                    }}
-                                  >
-                                    {actualIndex + 1}.
-                                  </Typography>
-                                  <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                    <Typography
-                                      variant="caption"
-                                      sx={{
-                                        color: 'text.primary',
-                                        lineHeight: 1.4,
-                                        fontSize: '0.75rem',
-                                        flex: 1,
-                                      }}
-                                    >
-                                      {newsItem.title}
-                                    </Typography>
-                                    <Typography
-                                      component="a"
-                                      href={`${window.location.origin}/news/${newsItem.news_id}`}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      sx={{
-                                        fontSize: '0.7rem',
-                                        color: 'primary.main',
-                                        textDecoration: 'none',
-                                        flexShrink: 0,
-                                        cursor: 'pointer',
-                                        '&:hover': {
-                                          textDecoration: 'underline',
-                                        },
-                                      }}
-                                    >
-                                      바로가기
-                                    </Typography>
-                                  </Box>
-                                </Box>
-                              );
-                            })}
-                          </Stack>
-                        </Box>
-
-                        {/* Right Arrow */}
-                        <Box component="span">
-                          <IconButton
-                            onClick={() => handleNextPage(item.originalClusterId)}
-                            disabled={
-                              !carouselStates[item.originalClusterId] ||
-                              carouselStates[item.originalClusterId].currentPage === carouselStates[item.originalClusterId].totalPages - 1
-                            }
-                            size="small"
-                            sx={{
-                              minWidth: '40px',
-                              height: '40px',
-                              border: '1px solid',
-                              borderColor: 'grey.300',
-                              bgcolor: 'white',
-                              '&:hover': { bgcolor: 'grey.100' },
-                              '&.Mui-disabled': {
-                                bgcolor: 'grey.100',
-                                borderColor: 'grey.200',
-                                opacity: 0.5
-                              }
-                            }}
-                          >
-                            <ChevronRightIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      </Box>
-
-                      {/* Page Indicator */}
-                      {carouselStates[item.originalClusterId] && carouselStates[item.originalClusterId].totalPages > 1 && (
                         <Typography
                           variant="caption"
                           sx={{
-                            textAlign: 'center',
-                            display: 'block',
-                            mt: 0.5,
-                            color: 'text.secondary'
+                            color: 'text.secondary',
+                            flexShrink: 0,
+                            minWidth: '16px',
+                            fontSize: '0.75rem',
                           }}
                         >
-                          {carouselStates[item.originalClusterId].currentPage + 1} / {carouselStates[item.originalClusterId].totalPages}
+                          {itemIndex + 1}.
                         </Typography>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-
-              {/* "계속..." indicator for multi-page clusters */}
-              {item.totalParts > 1 && item.partNumber < item.totalParts && (
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: 'text.secondary',
-                    mt: 1,
-                    display: 'block',
-                    textAlign: 'right',
-                    fontStyle: 'italic',
-                  }}
-                >
-                  (다음 페이지에 계속)
-                </Typography>
+                        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'text.primary',
+                              lineHeight: 1.4,
+                              fontSize: '0.75rem',
+                              flex: 1,
+                            }}
+                          >
+                            {item.title}
+                          </Typography>
+                          <Typography
+                            onClick={() => handleNewsClick(item.news_id)}
+                            sx={{
+                              fontSize: '0.7rem',
+                              color: 'primary.main',
+                              textDecoration: 'none',
+                              flexShrink: 0,
+                              cursor: 'pointer',
+                              '&:hover': {
+                                textDecoration: 'underline',
+                              },
+                            }}
+                          >
+                            바로가기
+                          </Typography>
+                        </Box>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Box>
               )}
             </Card>
           ))

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -20,14 +20,13 @@ import LastPageIcon from '@mui/icons-material/LastPage';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useWeeklyReport } from '../../hooks/useWeeklyReport';
-import { aggregateReportStats, formatWeekInfo, getTopClustersByCategory } from '../../utils/reportHelpers';
+import { aggregateReportStats, getTopClustersByCategory, formatWeekInfo } from '../../utils/reportHelpers';
 import { CATEGORY_MAP } from '../../types/report';
 import CoverPage from '../../features/report/CoverPage';
 import TableOfContentsPage from '../../features/report/TableOfContentsPage';
 import CategorySummaryPage from '../../features/report/CategorySummaryPage';
 import { generatePDF } from '../../utils/generatePDF';
-import { calculateCategoryPagesEnhanced } from '../../utils/pdfLayoutCalculator';
-import type { WeeklyReportDialogProps, PageLayoutEnhanced } from '../../types/report';
+import type { WeeklyReportDialogProps } from '../../types/report';
 
 function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
   const { clusters, loading, error } = useWeeklyReport(date);
@@ -37,44 +36,8 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Calculate category pages dynamically
-  const categoryPages = useMemo(() => {
-    if (clusters.length === 0) return [];
-
-    let currentPageIndex = 3; // Cover(1) + TOC(2) = 3부터 시작
-    const allPages: Array<{
-      categoryId: number;
-      categoryLabel: string;
-      pageLayouts: PageLayoutEnhanced[];
-    }> = [];
-
-    Object.entries(CATEGORY_MAP).forEach(([categoryId, categoryLabel]) => {
-      // Get top 3 clusters by score for this category (no item limit for PDF)
-      const categoryClusters = getTopClustersByCategory(clusters, Number(categoryId), 3);
-
-      // Use enhanced calculation with splitting
-      const pageLayouts = calculateCategoryPagesEnhanced(
-        Number(categoryId),
-        categoryClusters,
-        currentPageIndex
-      );
-
-      allPages.push({
-        categoryId: Number(categoryId),
-        categoryLabel,
-        pageLayouts
-      });
-
-      currentPageIndex += pageLayouts.length;
-    });
-
-    return allPages;
-  }, [clusters]);
-
-  // Calculate total pages dynamically
-  const totalPages = useMemo(() => {
-    return 2 + categoryPages.reduce((sum, cat) => sum + cat.pageLayouts.length, 0);
-  }, [categoryPages]);
+  // Total pages: 1 Cover + 1 TOC + 6 Category pages = 8 pages
+  const totalPages = 8;
 
   // Calculate dynamic scale based on container height
   useEffect(() => {
@@ -354,39 +317,18 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
             {/* Table of Contents */}
             <TableOfContentsPage categories={tocCategories} />
 
-            {/* Category Summary Pages - Dynamic based on content */}
-            {pdfGenerating ? (
-              // PDF Mode: Multiple pages with cluster splitting
-              categoryPages.map(({ categoryId, categoryLabel, pageLayouts }) => (
-                <React.Fragment key={categoryId}>
-                  {pageLayouts.map((layout) => (
-                    <CategorySummaryPage
-                      key={`${categoryId}-${layout.pageIndex}`}
-                      categoryId={categoryId}
-                      categoryLabel={categoryLabel}
-                      clusterParts={layout.clusterParts}
-                      pdfGenerating={pdfGenerating}
-                      showHeader={layout.isFirstPage}
-                    />
-                  ))}
-                </React.Fragment>
-              ))
-            ) : (
-              // Screen Mode: Single page per category with all clusters (carousel mode)
-              Object.entries(CATEGORY_MAP).map(([categoryId, categoryLabel]) => {
-                const categoryClusters = getTopClustersByCategory(clusters, Number(categoryId), 3);
-                return (
-                  <CategorySummaryPage
-                    key={categoryId}
-                    categoryId={Number(categoryId)}
-                    categoryLabel={categoryLabel}
-                    clusters={categoryClusters}
-                    pdfGenerating={false}
-                    showHeader={true}
-                  />
-                );
-              })
-            )}
+            {/* Category Summary Pages (1-6) */}
+            {Object.entries(CATEGORY_MAP).map(([categoryId, categoryLabel]) => {
+              const topClusters = getTopClustersByCategory(clusters, Number(categoryId), 3);
+              return (
+                <CategorySummaryPage
+                  key={categoryId}
+                  categoryId={Number(categoryId)}
+                  categoryLabel={categoryLabel}
+                  clusters={topClusters}
+                />
+              );
+            })}
           </Box>
         )}
       </DialogContent>
