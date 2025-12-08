@@ -202,25 +202,34 @@ function CoverPage({ weekNumber, dateRange, totalNews, totalIssues }: CoverPageP
       <hr/>
 
       {/* Footer */}
-      <Box sx={{ mt: 6, textAlign: 'left' }}>
-        <Typography
-          variant="body1"
+      <Box sx={{ mt: 3, textAlign: 'left' }}>
+        <Box
           sx={{
-            color: 'text.secondary',
-            fontWeight: 500,
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 1.5,
+            width: 'fit-content',
           }}
         >
-          Provided by 
-        </Typography>
-        <Typography 
-          variant='h6'
-          sx={{
-            color:'primary.main',
-            fontWeight:700
-          }}  
-        >
-          CG INSIDE
-        </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: 'text.secondary',
+              fontWeight: 500,
+            }}
+          >
+            Provided by
+          </Typography>
+          <Box
+            component="img"
+            src="/cginside-logo.png"
+            alt="CG INSIDE 로고"
+            sx={{
+              height: 40,
+            }}
+          />
+        </Box>
       </Box>
     </Box>
   );
