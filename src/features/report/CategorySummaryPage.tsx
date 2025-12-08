@@ -1,7 +1,7 @@
 import { Box, Typography, Card, Stack, Chip, IconButton } from '@mui/material';
 import { ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon } from '@mui/icons-material';
 import { useState, useMemo, useEffect } from 'react';
-import type { CategorySummaryPageProps } from '../../types/report';
+import type { CategorySummaryPageProps, ClusterPart } from '../../types/report';
 
 interface ClusterCarouselState {
   currentPage: number; // 0-based
@@ -11,11 +11,13 @@ interface ClusterCarouselState {
 function CategorySummaryPage({
   categoryLabel,
   clusters,
+  clusterParts,
   pdfGenerating = false,
   showHeader = true
 }: CategorySummaryPageProps) {
   // Initialize carousel states with useMemo to avoid setState in useEffect
   const initialCarouselStates = useMemo(() => {
+    if (!clusters) return {};
     return clusters.reduce((acc, cluster) => {
       acc[cluster.id] = {
         currentPage: 0,
@@ -32,8 +34,36 @@ function CategorySummaryPage({
     setCarouselStates(initialCarouselStates);
   }, [initialCarouselStates]);
 
+  // Determine which data source to use
+  const displayItems = useMemo((): ClusterPart[] => {
+    if (pdfGenerating && clusterParts) {
+      return clusterParts;
+    }
+
+    // Legacy mode: convert clusters to ClusterPart format for screen mode
+    if (clusters) {
+      return clusters.map((cluster) => ({
+        originalClusterId: cluster.id,
+        category_id: cluster.category_id,
+        representative_title: cluster.representative_title,
+        score: cluster.score,
+        size: cluster.size,
+        summary: cluster.summary,
+        items: cluster.items,
+        isFirstPart: true,
+        isContinuation: false,
+        partNumber: 1,
+        totalParts: 1,
+        itemStartIndex: 0,
+        itemEndIndex: cluster.items.length,
+      }));
+    }
+
+    return [];
+  }, [pdfGenerating, clusterParts, clusters]);
+
   // Helper functions
-  const getCurrentPageItems = (items: typeof clusters[0]['items'], clusterId: number) => {
+  const getCurrentPageItems = (items: ClusterPart['items'], clusterId: number) => {
     const state = carouselStates[clusterId];
     if (!state) return items.slice(0, 3);
     const start = state.currentPage * 3;
@@ -117,16 +147,16 @@ function CategorySummaryPage({
 
       {/* Clusters (Top 3 Issues) */}
       <Stack spacing={2}>
-        {clusters.length === 0 ? (
+        {displayItems.length === 0 ? (
           <Card sx={{ p: 2, textAlign: 'center', borderRadius: '5px' }}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               이 카테고리에는 표시할 이슈가 없습니다.
             </Typography>
           </Card>
         ) : (
-          clusters.map((cluster, index) => (
+          displayItems.map((item, displayIndex) => (
             <Card
-              key={cluster.id}
+              key={`${item.originalClusterId}-${item.partNumber}`}
               sx={{
                 p: 2,
                 borderRadius: '5px',
@@ -145,40 +175,55 @@ function CategorySummaryPage({
                     fontSize: '0.95rem',
                   }}
                 >
-                  {index + 1}. {cluster.representative_title}
+                  {displayIndex + 1}. {item.representative_title}
+                  {item.totalParts > 1 && (
+                    <Typography
+                      component="span"
+                      sx={{
+                        ml: 1,
+                        fontSize: '0.75rem',
+                        color: 'text.secondary',
+                        fontWeight: 500,
+                      }}
+                    >
+                      ({item.partNumber}/{item.totalParts})
+                    </Typography>
+                  )}
                 </Typography>
 
-                {/* Meta Info (Score + Size) */}
-                <Stack direction="row" spacing={0.5} sx={{ mb: 1 }}>
-                  {cluster.score !== null && (
+                {/* Meta Info (Score + Size) - only show on first part */}
+                {item.isFirstPart && (
+                  <Stack direction="row" spacing={0.5} sx={{ mb: 1 }}>
+                    {item.score !== null && (
+                      <Chip
+                        label={`점수: ${item.score.toFixed(1)}`}
+                        size="small"
+                        sx={{
+                          bgcolor: 'primary.main',
+                          color: 'white',
+                          fontWeight: 600,
+                          fontSize: '0.7rem',
+                          height: '20px',
+                        }}
+                      />
+                    )}
                     <Chip
-                      label={`점수: ${cluster.score.toFixed(1)}`}
+                      label={`이슈 규모: ${item.size}건`}
                       size="small"
                       sx={{
-                        bgcolor: 'primary.main',
+                        bgcolor: 'secondary.light',
                         color: 'white',
                         fontWeight: 600,
                         fontSize: '0.7rem',
                         height: '20px',
                       }}
                     />
-                  )}
-                  <Chip
-                    label={`이슈 규모: ${cluster.size}건`}
-                    size="small"
-                    sx={{
-                      bgcolor: 'secondary.light',
-                      color: 'white',
-                      fontWeight: 600,
-                      fontSize: '0.7rem',
-                      height: '20px',
-                    }}
-                  />
-                </Stack>
+                  </Stack>
+                )}
               </Box>
 
-              {/* Summary */}
-              {cluster.summary && (
+              {/* Summary - only show on first part */}
+              {item.isFirstPart && item.summary && (
                 <Typography
                   variant="body2"
                   sx={{
@@ -188,12 +233,27 @@ function CategorySummaryPage({
                     fontSize: '0.85rem',
                   }}
                 >
-                  {cluster.summary}
+                  {item.summary}
+                </Typography>
+              )}
+
+              {/* Continuation indicator */}
+              {item.isContinuation && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                    mb: 1,
+                    display: 'block',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  (이전 페이지에서 계속)
                 </Typography>
               )}
 
               {/* News Items - Carousel for screen, all items for PDF */}
-              {cluster.items.length > 0 && (
+              {item.items.length > 0 && (
                 <>
                   {pdfGenerating ? (
                     // PDF Mode: Show all news items
@@ -213,63 +273,67 @@ function CategorySummaryPage({
                           display: 'block',
                         }}
                       >
-                        관련 뉴스 ({cluster.items.length}건)
+                        관련 뉴스 ({item.items.length}건)
+                        {item.totalParts > 1 && ` - ${item.itemStartIndex + 1}~${item.itemEndIndex}번`}
                       </Typography>
 
                       <Stack spacing={0.75}>
-                        {cluster.items.map((item, itemIndex) => (
-                          <Box
-                            key={item.news_id}
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'flex-start',
-                              gap: 0.5,
-                            }}
-                          >
-                            <Typography
-                              variant="caption"
+                        {item.items.map((newsItem, itemIndex) => {
+                          const globalIndex = item.itemStartIndex + itemIndex;
+                          return (
+                            <Box
+                              key={newsItem.news_id}
                               sx={{
-                                color: 'text.secondary',
-                                flexShrink: 0,
-                                minWidth: '16px',
-                                fontSize: '0.75rem',
+                                display: 'flex',
+                                alignItems: 'flex-start',
+                                gap: 0.5,
                               }}
                             >
-                              {itemIndex + 1}.
-                            </Typography>
-                            <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
                               <Typography
                                 variant="caption"
                                 sx={{
-                                  color: 'text.primary',
-                                  lineHeight: 1.4,
-                                  fontSize: '0.75rem',
-                                  flex: 1,
-                                }}
-                              >
-                                {item.title}
-                              </Typography>
-                              <Typography
-                                component="a"
-                                href={`${window.location.origin}/news/${item.news_id}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                sx={{
-                                  fontSize: '0.7rem',
-                                  color: 'primary.main',
-                                  textDecoration: 'none',
+                                  color: 'text.secondary',
                                   flexShrink: 0,
-                                  cursor: 'pointer',
-                                  '&:hover': {
-                                    textDecoration: 'underline',
-                                  },
+                                  minWidth: '16px',
+                                  fontSize: '0.75rem',
                                 }}
                               >
-                                바로가기
+                                {globalIndex + 1}.
                               </Typography>
+                              <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: 'text.primary',
+                                    lineHeight: 1.4,
+                                    fontSize: '0.75rem',
+                                    flex: 1,
+                                  }}
+                                >
+                                  {newsItem.title}
+                                </Typography>
+                                <Typography
+                                  component="a"
+                                  href={`${window.location.origin}/news/${newsItem.news_id}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  sx={{
+                                    fontSize: '0.7rem',
+                                    color: 'primary.main',
+                                    textDecoration: 'none',
+                                    flexShrink: 0,
+                                    cursor: 'pointer',
+                                    '&:hover': {
+                                      textDecoration: 'underline',
+                                    },
+                                  }}
+                                >
+                                  바로가기
+                                </Typography>
+                              </Box>
                             </Box>
-                          </Box>
-                        ))}
+                          );
+                        })}
                       </Stack>
                     </Box>
                   ) : (
@@ -279,8 +343,8 @@ function CategorySummaryPage({
                         {/* Left Arrow */}
                         <Box component="span">
                           <IconButton
-                            onClick={() => handlePrevPage(cluster.id)}
-                            disabled={!carouselStates[cluster.id] || carouselStates[cluster.id].currentPage === 0}
+                            onClick={() => handlePrevPage(item.originalClusterId)}
+                            disabled={!carouselStates[item.originalClusterId] || carouselStates[item.originalClusterId].currentPage === 0}
                             size="small"
                             sx={{
                               minWidth: '40px',
@@ -318,16 +382,16 @@ function CategorySummaryPage({
                               display: 'block',
                             }}
                           >
-                            관련 뉴스 ({cluster.items.length}건)
+                            관련 뉴스 ({item.items.length}건)
                           </Typography>
 
                           <Stack spacing={0.75}>
-                            {getCurrentPageItems(cluster.items, cluster.id).map((item, itemIndex) => {
-                              const state = carouselStates[cluster.id] || { currentPage: 0 };
+                            {getCurrentPageItems(item.items, item.originalClusterId).map((newsItem, itemIndex) => {
+                              const state = carouselStates[item.originalClusterId] || { currentPage: 0 };
                               const actualIndex = state.currentPage * 3 + itemIndex;
                               return (
                                 <Box
-                                  key={item.news_id}
+                                  key={newsItem.news_id}
                                   sx={{
                                     display: 'flex',
                                     alignItems: 'flex-start',
@@ -355,11 +419,11 @@ function CategorySummaryPage({
                                         flex: 1,
                                       }}
                                     >
-                                      {item.title}
+                                      {newsItem.title}
                                     </Typography>
                                     <Typography
                                       component="a"
-                                      href={`${window.location.origin}/news/${item.news_id}`}
+                                      href={`${window.location.origin}/news/${newsItem.news_id}`}
                                       target="_blank"
                                       rel="noopener noreferrer"
                                       sx={{
@@ -385,10 +449,10 @@ function CategorySummaryPage({
                         {/* Right Arrow */}
                         <Box component="span">
                           <IconButton
-                            onClick={() => handleNextPage(cluster.id)}
+                            onClick={() => handleNextPage(item.originalClusterId)}
                             disabled={
-                              !carouselStates[cluster.id] ||
-                              carouselStates[cluster.id].currentPage === carouselStates[cluster.id].totalPages - 1
+                              !carouselStates[item.originalClusterId] ||
+                              carouselStates[item.originalClusterId].currentPage === carouselStates[item.originalClusterId].totalPages - 1
                             }
                             size="small"
                             sx={{
@@ -411,7 +475,7 @@ function CategorySummaryPage({
                       </Box>
 
                       {/* Page Indicator */}
-                      {carouselStates[cluster.id] && carouselStates[cluster.id].totalPages > 1 && (
+                      {carouselStates[item.originalClusterId] && carouselStates[item.originalClusterId].totalPages > 1 && (
                         <Typography
                           variant="caption"
                           sx={{
@@ -421,12 +485,28 @@ function CategorySummaryPage({
                             color: 'text.secondary'
                           }}
                         >
-                          {carouselStates[cluster.id].currentPage + 1} / {carouselStates[cluster.id].totalPages}
+                          {carouselStates[item.originalClusterId].currentPage + 1} / {carouselStates[item.originalClusterId].totalPages}
                         </Typography>
                       )}
                     </>
                   )}
                 </>
+              )}
+
+              {/* "계속..." indicator for multi-page clusters */}
+              {item.totalParts > 1 && item.partNumber < item.totalParts && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: 'text.secondary',
+                    mt: 1,
+                    display: 'block',
+                    textAlign: 'right',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  (다음 페이지에 계속)
+                </Typography>
               )}
             </Card>
           ))

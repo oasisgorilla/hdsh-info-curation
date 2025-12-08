@@ -26,8 +26,8 @@ import CoverPage from '../../features/report/CoverPage';
 import TableOfContentsPage from '../../features/report/TableOfContentsPage';
 import CategorySummaryPage from '../../features/report/CategorySummaryPage';
 import { generatePDF } from '../../utils/generatePDF';
-import { calculateCategoryPages, type PageLayout } from '../../utils/pdfLayoutCalculator';
-import type { WeeklyReportDialogProps } from '../../types/report';
+import { calculateCategoryPagesEnhanced } from '../../utils/pdfLayoutCalculator';
+import type { WeeklyReportDialogProps, PageLayoutEnhanced } from '../../types/report';
 
 function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
   const { clusters, loading, error } = useWeeklyReport(date);
@@ -45,13 +45,15 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
     const allPages: Array<{
       categoryId: number;
       categoryLabel: string;
-      pageLayouts: PageLayout[];
+      pageLayouts: PageLayoutEnhanced[];
     }> = [];
 
     Object.entries(CATEGORY_MAP).forEach(([categoryId, categoryLabel]) => {
       // Get top 3 clusters by score for this category (no item limit for PDF)
       const categoryClusters = getTopClustersByCategory(clusters, Number(categoryId), 3);
-      const pageLayouts = calculateCategoryPages(
+
+      // Use enhanced calculation with splitting
+      const pageLayouts = calculateCategoryPagesEnhanced(
         Number(categoryId),
         categoryClusters,
         currentPageIndex
@@ -354,7 +356,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
 
             {/* Category Summary Pages - Dynamic based on content */}
             {pdfGenerating ? (
-              // PDF Mode: Multiple pages with dynamic splitting
+              // PDF Mode: Multiple pages with cluster splitting
               categoryPages.map(({ categoryId, categoryLabel, pageLayouts }) => (
                 <React.Fragment key={categoryId}>
                   {pageLayouts.map((layout) => (
@@ -362,7 +364,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
                       key={`${categoryId}-${layout.pageIndex}`}
                       categoryId={categoryId}
                       categoryLabel={categoryLabel}
-                      clusters={layout.clusters}
+                      clusterParts={layout.clusterParts}
                       pdfGenerating={pdfGenerating}
                       showHeader={layout.isFirstPage}
                     />
@@ -370,7 +372,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
                 </React.Fragment>
               ))
             ) : (
-              // Screen Mode: Single page per category with all clusters (no item limit for carousel)
+              // Screen Mode: Single page per category with all clusters (carousel mode)
               Object.entries(CATEGORY_MAP).map(([categoryId, categoryLabel]) => {
                 const categoryClusters = getTopClustersByCategory(clusters, Number(categoryId), 3);
                 return (
