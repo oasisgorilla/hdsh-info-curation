@@ -172,7 +172,7 @@ function CategorySummaryPage({
                     label={`이슈 규모: ${cluster.size}건`}
                     size="small"
                     sx={{
-                      bgcolor: 'secondary.light',
+                      bgcolor: 'secondary.main',
                       color: 'white',
                       fontWeight: 600,
                       fontSize: '0.7rem',
