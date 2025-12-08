@@ -63,4 +63,6 @@ export interface CategorySummaryPageProps {
   categoryId: number;
   categoryLabel: string;
   clusters: ClusteredNewsRead[]; // Already filtered and sorted top 3
+  pdfGenerating?: boolean; // PDF generation mode flag
+  showHeader?: boolean; // Show header bar (only first page)
 }

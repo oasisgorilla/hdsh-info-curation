@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Box, Card, TextField, Button, Typography, SvgIcon, Alert, CircularProgress } from '@mui/material';
+import { Box, Card, TextField, Button, Typography, Alert, CircularProgress } from '@mui/material';
 import { authService } from '../services/authService';
 import { colors } from '../styles/theme';
 

@@ -86,12 +86,13 @@ export function aggregateReportStats(clusters: ClusteredNewsRead[]): { totalNews
 
 /**
  * Get top N clusters for a specific category, sorted by score
- * Automatically limits news items to max 3 per cluster
+ * Optionally limits news items per cluster
  */
 export function getTopClustersByCategory(
   clusters: ClusteredNewsRead[],
   categoryId: number,
-  limit: number = 3
+  limit: number = 3,
+  maxItemsPerCluster?: number
 ): ClusteredNewsRead[] {
   return clusters
     .filter(c => c.category_id === categoryId)
@@ -99,6 +100,6 @@ export function getTopClustersByCategory(
     .slice(0, limit)
     .map(cluster => ({
       ...cluster,
-      items: cluster.items.slice(0, 3) // Max 3 news items per cluster
+      items: maxItemsPerCluster ? cluster.items.slice(0, maxItemsPerCluster) : cluster.items
     }));
 }
