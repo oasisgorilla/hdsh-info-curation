@@ -99,9 +99,15 @@ function Header({ activeTab = '뉴스 검색', onTabChange }: HeaderProps) {
             component="img"
             src="/logo.png"
             alt="현대삼호중공업 로고"
+            onClick={() => navigate('/main')}
             sx={{
               height: 35,
               objectFit: 'contain',
+              cursor: 'pointer',
+              transition: 'opacity 0.2s',
+              '&:hover': {
+                opacity: 0.8,
+              },
             }}
           />
 
