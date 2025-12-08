@@ -10,6 +10,7 @@ import {
   Typography,
   Divider,
   Tooltip,
+  LinearProgress,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -34,7 +35,18 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
   const contentRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.62);
   const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [pdfProgress, setPdfProgress] = useState(0); // PDF generation progress (0-100)
   const [currentPage, setCurrentPage] = useState(1);
+
+  // Category pagination state: categoryId -> current page number
+  const [categoryPages, setCategoryPages] = useState<Record<number, number>>({
+    1: 1, // 국내동향
+    2: 1, // 중국동향
+    3: 1, // 해외동향
+    4: 1, // 원자재·RISK
+    5: 1, // 기술·R&D
+    6: 1, // 정책·규제
+  });
 
   // Calculate total pages dynamically
   const calculateTotalPages = () => {
@@ -92,6 +104,35 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
     };
   }, [open, loading, error]);
 
+  // Preload images when dialog opens
+  useEffect(() => {
+    if (open && !loading && !error && clusters.length > 0) {
+      console.log('Preloading images for report...');
+
+      // Images to preload
+      const imagesToPreload = ['/logo.png', '/cginside-logo.png'];
+
+      const preloadPromises = imagesToPreload.map(src => {
+        return new Promise<void>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            console.log('Preloaded:', src);
+            resolve();
+          };
+          img.onerror = () => {
+            console.error('Failed to preload:', src);
+            reject(new Error(`Failed to preload: ${src}`));
+          };
+          img.src = src;
+        });
+      });
+
+      Promise.all(preloadPromises)
+        .then(() => console.log('All images preloaded successfully'))
+        .catch(err => console.error('Image preload failed:', err));
+    }
+  }, [open, loading, error, clusters.length]);
+
   // Format week info
   const { weekNumber, dateRange } = formatWeekInfo(date);
 
@@ -146,9 +187,50 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
   };
 
   const handleFirstPage = () => scrollToPage(1);
-  const handleLastPage = () => scrollToPage(totalPages);
+  const handleLastPage = () => scrollToPage(8);
   const handlePrevPage = () => scrollToPage(Math.max(currentPage - 1, 1));
-  const handleNextPage = () => scrollToPage(Math.min(currentPage + 1, totalPages));
+  const handleNextPage = () => scrollToPage(Math.min(currentPage + 1, 8));
+
+  // Handle category page change
+  const handleCategoryPageChange = (categoryId: number, page: number) => {
+    setCategoryPages(prev => ({
+      ...prev,
+      [categoryId]: page,
+    }));
+  };
+
+  // Wait for all images to load before PDF generation
+  const waitForImages = async (element: HTMLElement): Promise<void> => {
+    const images = Array.from(element.querySelectorAll('img'));
+    console.log(`Waiting for ${images.length} images to load...`);
+
+    const imagePromises = images.map((img, idx) => {
+      return new Promise<void>((resolve, reject) => {
+        if (img.complete && img.naturalHeight !== 0) {
+          console.log(`Image ${idx} already loaded:`, img.src);
+          resolve();
+        } else {
+          console.log(`Waiting for image ${idx}:`, img.src);
+          img.onload = () => {
+            console.log(`Image ${idx} loaded:`, img.src);
+            resolve();
+          };
+          img.onerror = () => {
+            console.error(`Image ${idx} failed to load:`, img.src);
+            reject(new Error(`Failed to load image: ${img.src}`));
+          };
+          // Timeout after 5 seconds
+          setTimeout(() => {
+            console.warn(`Image ${idx} load timeout:`, img.src);
+            reject(new Error(`Image load timeout: ${img.src}`));
+          }, 5000);
+        }
+      });
+    });
+
+    await Promise.all(imagePromises);
+    console.log('All images loaded successfully');
+  };
 
   // Handle PDF download
   const handleDownloadPDF = async () => {
@@ -156,27 +238,58 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
 
     setPdfGenerating(true);
 
-    // Store original scale
-    const originalScale = scale;
+    // Store original transform
+    const originalTransform = reportRef.current.style.transform;
+    const originalTransformOrigin = reportRef.current.style.transformOrigin;
 
     try {
-      // Temporarily set scale to 1 for PDF generation (full size)
-      setScale(1);
+      console.log('=== PDF Generation Started ===');
+      console.log('Total clusters:', clusters.length);
 
-      // Wait for scale change to be applied
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Remove transform to get actual size
+      reportRef.current.style.transform = 'none';
+      reportRef.current.style.transformOrigin = 'top center';
 
+      // Wait for DOM to render all pages
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Wait for images to load
+      try {
+        await waitForImages(reportRef.current);
+      } catch (error) {
+        console.warn('Image loading failed, continuing anyway:', error);
+      }
+
+      console.log('Starting PDF generation...');
+      setPdfProgress(0);
       await generatePDF({
         element: reportRef.current,
         filename: `조선업_AI_리포트_${weekNumber}주차_${date}.pdf`,
+        onProgress: (progress) => {
+          setPdfProgress(progress);
+          console.log(`PDF progress: ${progress}%`);
+        },
       });
+      console.log('PDF generation completed successfully');
+
+      // Restore original transform
+      if (reportRef.current) {
+        reportRef.current.style.transform = originalTransform;
+        reportRef.current.style.transformOrigin = originalTransformOrigin;
+      }
     } catch (error) {
       console.error('PDF download failed:', error);
       alert('PDF 다운로드 중 오류가 발생했습니다.');
+
+      // Restore transform on error
+      if (reportRef.current) {
+        reportRef.current.style.transform = originalTransform;
+        reportRef.current.style.transformOrigin = originalTransformOrigin;
+      }
     } finally {
-      // Restore original scale
-      setScale(originalScale);
       setPdfGenerating(false);
+      setPdfProgress(0);
+      console.log('=== PDF Generation Ended ===');
     }
   };
 
@@ -237,7 +350,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
             </IconButton>
           </Tooltip>
           <Typography variant="body2" sx={{ minWidth: '80px', textAlign: 'center' }}>
-            {currentPage} / {totalPages}
+            {currentPage} / 8
           </Typography>
           <Tooltip title="다음 페이지">
             <IconButton size="small" onClick={handleNextPage} disabled={currentPage === totalPages || loading}>
@@ -252,6 +365,18 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
         </Box>
 
         <Box sx={{ flexGrow: 1 }} />
+
+        {/* PDF Generation Progress */}
+        {pdfGenerating && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mr: 1 }}>
+            <Box sx={{ minWidth: 100 }}>
+              <LinearProgress variant="determinate" value={pdfProgress} />
+            </Box>
+            <Typography variant="caption" sx={{ color: 'text.secondary', minWidth: 40 }}>
+              {pdfProgress}%
+            </Typography>
+          </Box>
+        )}
 
         {/* PDF Download Button */}
         <Tooltip title={pdfGenerating ? 'PDF 생성 중...' : 'PDF 다운로드'}>
@@ -348,37 +473,64 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
             {/* Table of Contents */}
             <TableOfContentsPage categories={tocCategories} />
 
-            {/* Category Summary Pages (1-6) - Split into pages of 3 clusters each */}
+            {/* Category Summary Pages (1-6) */}
             {Object.entries(CATEGORY_MAP).map(([categoryId, categoryLabel]) => {
               const allClusters = getTopClustersByCategory(clusters, Number(categoryId), Infinity);
+              const catId = Number(categoryId);
+              const totalCategoryPages = allClusters.length === 0 ? 1 : Math.ceil(allClusters.length / 3);
 
-              // 클러스터가 없으면 빈 페이지 1개만 표시
-              if (allClusters.length === 0) {
+              if (pdfGenerating) {
+                // PDF 생성 모드: 모든 페이지 렌더링
+                if (allClusters.length === 0) {
+                  return (
+                    <CategorySummaryPage
+                      key={`${categoryId}-pdf-empty`}
+                      categoryId={catId}
+                      categoryLabel={categoryLabel}
+                      clusters={[]}
+                      currentPage={1}
+                      totalPages={1}
+                      isPreview={false}
+                    />
+                  );
+                }
+
+                const pages = [];
+                for (let i = 0; i < allClusters.length; i += 3) {
+                  const pageClusters = allClusters.slice(i, i + 3);
+                  const pageNum = Math.floor(i / 3) + 1;
+                  pages.push(
+                    <CategorySummaryPage
+                      key={`${categoryId}-pdf-page-${pageNum}`}
+                      categoryId={catId}
+                      categoryLabel={categoryLabel}
+                      clusters={pageClusters}
+                      currentPage={pageNum}
+                      totalPages={totalCategoryPages}
+                      isPreview={false}
+                    />
+                  );
+                }
+                return pages;
+              } else {
+                // 웹뷰 모드: 현재 페이지만 렌더링
+                const currentCategoryPage = categoryPages[catId] || 1;
+                const startIdx = (currentCategoryPage - 1) * 3;
+                const pageClusters = allClusters.slice(startIdx, startIdx + 3);
+
                 return (
                   <CategorySummaryPage
-                    key={`${categoryId}-page-1`}
-                    categoryId={Number(categoryId)}
-                    categoryLabel={categoryLabel}
-                    clusters={[]}
-                  />
-                );
-              }
-
-              // 3개씩 분할
-              const pages = [];
-              for (let i = 0; i < allClusters.length; i += 3) {
-                const pageClusters = allClusters.slice(i, i + 3);
-                pages.push(
-                  <CategorySummaryPage
-                    key={`${categoryId}-page-${Math.floor(i / 3) + 1}`}
-                    categoryId={Number(categoryId)}
+                    key={`${categoryId}-preview`}
+                    categoryId={catId}
                     categoryLabel={categoryLabel}
                     clusters={pageClusters}
+                    currentPage={currentCategoryPage}
+                    totalPages={totalCategoryPages}
+                    onPageChange={(page) => handleCategoryPageChange(catId, page)}
+                    isPreview={true}
                   />
                 );
               }
-
-              return pages;
             })}
           </Box>
         )}

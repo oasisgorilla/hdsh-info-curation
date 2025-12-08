@@ -62,5 +62,9 @@ export interface TableOfContentsPageProps {
 export interface CategorySummaryPageProps {
   categoryId: number;
   categoryLabel: string;
-  clusters: ClusteredNewsRead[]; // Already filtered and sorted top 3
+  clusters: ClusteredNewsRead[]; // Current page clusters (max 3)
+  currentPage?: number; // 1-based, current page number
+  totalPages?: number; // Total pages for this category
+  onPageChange?: (page: number) => void; // Callback for page navigation (web view only)
+  isPreview?: boolean; // true for web view (with navigation), false for PDF
 }

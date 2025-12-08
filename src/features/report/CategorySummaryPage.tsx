@@ -1,9 +1,30 @@
-import { Box, Typography, Card, Stack, Chip } from '@mui/material';
+import { Box, Typography, Card, Stack, Chip, IconButton } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import type { CategorySummaryPageProps } from '../../types/report';
 
-function CategorySummaryPage({ categoryLabel, clusters }: CategorySummaryPageProps) {
+function CategorySummaryPage({
+  categoryLabel,
+  clusters,
+  currentPage = 1,
+  totalPages = 1,
+  onPageChange,
+  isPreview = false,
+}: CategorySummaryPageProps) {
   const navigate = useNavigate();
+
+  const handlePrevPage = () => {
+    if (onPageChange && currentPage > 1) {
+      onPageChange(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (onPageChange && currentPage < totalPages) {
+      onPageChange(currentPage + 1);
+    }
+  };
 
   const handleNewsClick = (newsId: string) => {
     navigate(`/news/${newsId}`);
@@ -45,17 +66,58 @@ function CategorySummaryPage({ categoryLabel, clusters }: CategorySummaryPagePro
           {categoryLabel}
         </Typography>
 
-        {/* Mini Logo */}
-        <Typography
-          variant="caption"
-          sx={{
-            fontWeight: 600,
-            color: 'text.secondary',
-            letterSpacing: '0.05em',
-          }}
-        >
-          HD SAMHO
-        </Typography>
+        {/* Navigation Controls (Preview mode only) */}
+        {isPreview && totalPages > 1 && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <IconButton
+              size="small"
+              onClick={handlePrevPage}
+              disabled={currentPage === 1}
+              sx={{
+                color: currentPage === 1 ? 'text.disabled' : 'primary.main',
+              }}
+            >
+              <ChevronLeftIcon />
+            </IconButton>
+
+            <Typography
+              variant="body2"
+              sx={{
+                minWidth: '60px',
+                textAlign: 'center',
+                fontWeight: 600,
+                color: 'text.secondary',
+              }}
+            >
+              {currentPage} / {totalPages}
+            </Typography>
+
+            <IconButton
+              size="small"
+              onClick={handleNextPage}
+              disabled={currentPage === totalPages}
+              sx={{
+                color: currentPage === totalPages ? 'text.disabled' : 'primary.main',
+              }}
+            >
+              <ChevronRightIcon />
+            </IconButton>
+          </Box>
+        )}
+
+        {/* Mini Logo (PDF mode only) */}
+        {!isPreview && (
+          <Typography
+            variant="caption"
+            sx={{
+              fontWeight: 600,
+              color: 'text.secondary',
+              letterSpacing: '0.05em',
+            }}
+          >
+            HD SAMHO
+          </Typography>
+        )}
       </Box>
 
       {/* Clusters (Top 3 Issues) */}
