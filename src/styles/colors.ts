@@ -160,7 +160,7 @@ export const colors = {
       secondary: `linear-gradient(to bottom right, ${hdPalette.trustBlue.main}, ${hdPalette.heritageGreen.main})`,
       overlay1: "linear-gradient(to bottom right, rgba(255,255,255,0.05), transparent)",
       overlay2: "linear-gradient(to top right, rgba(255,255,255,0.05), transparent)",
-      weekBadge: "linear-gradient(to bottom right, #52525b, #3f3f46)",
+      weekBadge: "linear-gradient(to bottom right, #71717a, #52525b)",
       aiSummary: "linear-gradient(to bottom right, #EFF6FF, #F0F9FF)",
     },
   },

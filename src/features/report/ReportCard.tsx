@@ -129,6 +129,10 @@ function ReportCard({
                   fontWeight: 500,
                   px: 2.5,
                   py: 1,
+                  bgcolor: 'primary.light',
+                  '&:hover': {
+                    bgcolor: 'primary.main',
+                  },
                 }}
               >
                 리포트 열기
