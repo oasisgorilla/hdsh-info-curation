@@ -157,7 +157,7 @@ function CategorySummaryPage({ categoryLabel, clusters }: CategorySummaryPagePro
                   </Typography>
 
                   <Stack spacing={0.75}>
-                    {cluster.items.map((item, itemIndex) => (
+                    {cluster.items.slice(0, 3).map((item, itemIndex) => (
                       <Box
                         key={item.news_id}
                         sx={{

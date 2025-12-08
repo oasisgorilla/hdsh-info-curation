@@ -36,8 +36,24 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Total pages: 1 Cover + 1 TOC + 6 Category pages = 8 pages
-  const totalPages = 8;
+  // Calculate total pages dynamically
+  const calculateTotalPages = () => {
+    if (clusters.length === 0) return 8; // 1 Cover + 1 TOC + 6 Category pages (empty)
+
+    let categoryPages = 0;
+    Object.keys(CATEGORY_MAP).forEach(categoryId => {
+      const categoryClusters = clusters.filter(c => c.category_id === Number(categoryId));
+      if (categoryClusters.length === 0) {
+        categoryPages += 1; // 빈 페이지
+      } else {
+        categoryPages += Math.ceil(categoryClusters.length / 3); // 3개씩 분할
+      }
+    });
+
+    return 1 + 1 + categoryPages; // Cover + TOC + Category pages
+  };
+
+  const totalPages = calculateTotalPages();
 
   // Calculate dynamic scale based on container height
   useEffect(() => {
@@ -84,12 +100,27 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
     ? aggregateReportStats(clusters)
     : { totalNews: 0, totalIssues: 0 };
 
-  // Prepare table of contents categories
-  const tocCategories = Object.entries(CATEGORY_MAP).map(([id, label], index) => ({
-    id: Number(id),
-    label,
-    pageNumber: index + 3, // Page 1 = Cover, Page 2 = TOC, Pages 3-8 = Categories
-  }));
+  // Prepare table of contents categories with dynamic page numbers
+  const tocCategories = (() => {
+    let currentPageNumber = 3; // 1 Cover + 1 TOC + start from 3
+    return Object.entries(CATEGORY_MAP).map(([id, label]) => {
+      const categoryId = Number(id);
+      const startPage = currentPageNumber;
+
+      const categoryClusters = clusters.filter(c => c.category_id === categoryId);
+      const pagesForCategory = categoryClusters.length === 0
+        ? 1
+        : Math.ceil(categoryClusters.length / 3);
+
+      currentPageNumber += pagesForCategory;
+
+      return {
+        id: categoryId,
+        label,
+        pageNumber: startPage,
+      };
+    });
+  })();
 
   // Zoom handlers
   const handleZoomIn = () => {
@@ -317,17 +348,37 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
             {/* Table of Contents */}
             <TableOfContentsPage categories={tocCategories} />
 
-            {/* Category Summary Pages (1-6) */}
+            {/* Category Summary Pages (1-6) - Split into pages of 3 clusters each */}
             {Object.entries(CATEGORY_MAP).map(([categoryId, categoryLabel]) => {
-              const topClusters = getTopClustersByCategory(clusters, Number(categoryId), 3);
-              return (
-                <CategorySummaryPage
-                  key={categoryId}
-                  categoryId={Number(categoryId)}
-                  categoryLabel={categoryLabel}
-                  clusters={topClusters}
-                />
-              );
+              const allClusters = getTopClustersByCategory(clusters, Number(categoryId), Infinity);
+
+              // 클러스터가 없으면 빈 페이지 1개만 표시
+              if (allClusters.length === 0) {
+                return (
+                  <CategorySummaryPage
+                    key={`${categoryId}-page-1`}
+                    categoryId={Number(categoryId)}
+                    categoryLabel={categoryLabel}
+                    clusters={[]}
+                  />
+                );
+              }
+
+              // 3개씩 분할
+              const pages = [];
+              for (let i = 0; i < allClusters.length; i += 3) {
+                const pageClusters = allClusters.slice(i, i + 3);
+                pages.push(
+                  <CategorySummaryPage
+                    key={`${categoryId}-page-${Math.floor(i / 3) + 1}`}
+                    categoryId={Number(categoryId)}
+                    categoryLabel={categoryLabel}
+                    clusters={pageClusters}
+                  />
+                );
+              }
+
+              return pages;
             })}
           </Box>
         )}
