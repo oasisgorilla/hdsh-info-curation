@@ -3,7 +3,7 @@ import { colors } from '../../styles/colors';
 
 export type TOCCategory = {
   id: number;
-  label: '국내동향' | '해외동향' | '중국동향' | '원자재RISK' | '기술R&D' | '정책규제';
+  label: '국내동향' | '해외동향' | '중국동향' | '원자재·RISK' | '기술·R&D' | '정책·규제';
   pageNumber: number;
 };
 
@@ -17,9 +17,9 @@ const getCategoryDescription = (label: TOCCategory['label']): string => {
     '국내동향': '주요 수주 및 기술 개발',
     '중국동향': '경쟁 전략 분석',
     '해외동향': '글로벌 시장 변화',
-    '원자재RISK': '가격 및 시장 리스크',
-    '기술R&D': '혁신 기술 개발',
-    '정책규제': '규제 및 지원 정책',
+    '원자재·RISK': '가격 및 시장 리스크',
+    '기술·R&D': '혁신 기술 개발',
+    '정책·규제': '규제 및 지원 정책',
   };
   return descriptionMap[label] || '';
 };
@@ -30,9 +30,9 @@ const getCategoryDisplayName = (label: TOCCategory['label']): string => {
     '국내동향': '국내 조선업 동향',
     '중국동향': '중국 조선업 동향',
     '해외동향': '해외 조선업 동향',
-    '원자재RISK': '원자재·리스크 동향',
-    '기술R&D': '기술·R&D 동향',
-    '정책규제': '정책·규제 동향',
+    '원자재·RISK': '원자재·리스크 동향',
+    '기술·R&D': '기술·R&D 동향',
+    '정책·규제': '정책·규제 동향',
   };
   return displayNameMap[label] || label;
 };

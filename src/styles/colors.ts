@@ -192,9 +192,9 @@ export const categoryColorMap: Record<string, typeof colors.category.domestic> =
   국내동향: colors.category.domestic,
   해외동향: colors.category.overseas,
   중국동향: colors.category.china,
-  원자재RISK: colors.category.risk,
-  "기술R&D": colors.category.rnd,
-  정책규제: colors.category.regulation,
+  원자재·RISK: colors.category.risk,
+  "기술·R&D": colors.category.rnd,
+  정책·규제: colors.category.regulation,
 };
 
 // 타입 안전성을 위한 카테고리 타입

@@ -15,9 +15,9 @@ const categoryMap: Record<string, number | undefined> = {
   "국내 동향": 1,
   "중국 동향": 2,
   "해외 동향": 3,
-  "원자재 RISK": 4,
-  "기술 R&D": 5,
-  "정책 규제": 6,
+  "원자재·RISK": 4,
+  "기술·R&D": 5,
+  "정책·규제": 6,
 };
 
 function MainPage() {

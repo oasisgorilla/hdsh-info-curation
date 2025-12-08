@@ -28,9 +28,9 @@ const categoryLabels: Record<number, string> = {
   1: "국내 동향",
   2: "중국 동향",
   3: "해외 동향",
-  4: "원자재 RISK",
-  5: "기술 R&D",
-  6: "정책 규제",
+  4: "원자재·RISK",
+  5: "기술·R&D",
+  6: "정책·규제",
 };
 
 function formatDate(dateString: string): string {

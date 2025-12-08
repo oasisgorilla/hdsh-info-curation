@@ -5,9 +5,9 @@ const CATEGORY_NAMES: Record<number, string> = {
   1: '국내동향',
   2: '중국동향',
   3: '해외동향',
-  4: '원자재RISK',
-  5: '기술R&D',
-  6: '정책규제',
+  4: '원자재·RISK',
+  5: '기술·R&D',
+  6: '정책·규제',
 };
 
 /**
