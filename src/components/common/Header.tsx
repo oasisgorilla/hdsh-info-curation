@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AppBar, Toolbar, Box, Button, IconButton, Menu, MenuItem } from '@mui/material';
 import { Person as PersonIcon, Logout as LogoutIcon } from '@mui/icons-material';
 import { colors } from '../../styles/theme';
@@ -53,7 +53,19 @@ function Header({ activeTab = '뉴스 검색', onTabChange }: HeaderProps) {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const location = useLocation()
 
+  const handleLogoClick = () => {
+    if (location.pathname === '/main') {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    } else {
+      navigate('/main');
+    }
+  };
+  
   const handleTabClick = (tab: string) => {
     onTabChange?.(tab);
     if (tab === '뉴스 검색') {
@@ -99,7 +111,7 @@ function Header({ activeTab = '뉴스 검색', onTabChange }: HeaderProps) {
             component="img"
             src="/logo.png"
             alt="현대삼호중공업 로고"
-            onClick={() => navigate('/main')}
+            onClick={handleLogoClick}
             sx={{
               height: 35,
               objectFit: 'contain',
