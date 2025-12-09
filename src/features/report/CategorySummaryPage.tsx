@@ -1,5 +1,4 @@
 import { Box, Typography, Card, Stack, Chip, IconButton } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import type { CategorySummaryPageProps } from '../../types/report';
@@ -13,8 +12,6 @@ function CategorySummaryPage({
   onPageChange,
   isPreview = false,
 }: CategorySummaryPageProps) {
-  const navigate = useNavigate();
-
   const handlePrevPage = () => {
     if (onPageChange && currentPage > 1) {
       onPageChange(currentPage - 1);
@@ -25,10 +22,6 @@ function CategorySummaryPage({
     if (onPageChange && currentPage < totalPages) {
       onPageChange(currentPage + 1);
     }
-  };
-
-  const handleNewsClick = (newsId: string) => {
-    navigate(`/news/${newsId}`);
   };
 
   return (
@@ -251,7 +244,10 @@ function CategorySummaryPage({
                             {item.title}
                           </Typography>
                           <Typography
-                            onClick={() => handleNewsClick(item.news_id)}
+                            component="a"
+                            href={`/news/${item.news_id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             sx={{
                               fontSize: '0.7rem',
                               color: 'primary.main',
