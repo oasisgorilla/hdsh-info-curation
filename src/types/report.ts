@@ -68,4 +68,5 @@ export interface CategorySummaryPageProps {
   totalPages?: number; // Total pages for this category
   onPageChange?: (page: number) => void; // Callback for page navigation (web view only)
   isPreview?: boolean; // true for web view (with navigation), false for PDF
+  globalPageNumber?: number; // Global PDF page number (for PDF mode only)
 }

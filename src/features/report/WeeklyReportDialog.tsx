@@ -144,23 +144,38 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
   // Prepare table of contents categories with dynamic page numbers
   const tocCategories = (() => {
     let currentPageNumber = 3; // 1 Cover + 1 TOC + start from 3
-    return Object.entries(CATEGORY_MAP).map(([id, label]) => {
-      const categoryId = Number(id);
-      const startPage = currentPageNumber;
 
-      const categoryClusters = clusters.filter(c => c.category_id === categoryId);
-      const pagesForCategory = categoryClusters.length === 0
-        ? 1
-        : Math.ceil(categoryClusters.length / 3);
+    if (pdfGenerating) {
+      // PDF 모드: 각 카테고리가 클러스터 수에 따라 여러 페이지 차지
+      return Object.entries(CATEGORY_MAP).map(([id, label]) => {
+        const categoryId = Number(id);
+        const startPage = currentPageNumber;
 
-      currentPageNumber += pagesForCategory;
+        const categoryClusters = clusters.filter(c => c.category_id === categoryId);
+        const pagesForCategory = categoryClusters.length === 0
+          ? 1
+          : Math.ceil(categoryClusters.length / 3);
 
-      return {
-        id: categoryId,
-        label,
-        pageNumber: startPage,
-      };
-    });
+        currentPageNumber += pagesForCategory;
+
+        return {
+          id: categoryId,
+          label,
+          pageNumber: startPage,
+        };
+      });
+    } else {
+      // 웹 프리뷰 모드: 각 카테고리가 1페이지씩만 차지 (캐러셀로 압축)
+      return Object.entries(CATEGORY_MAP).map(([id, label]) => {
+        const pageNumber = currentPageNumber;
+        currentPageNumber += 1;
+        return {
+          id: Number(id),
+          label,
+          pageNumber,
+        };
+      });
+    }
   })();
 
   // Zoom handlers
@@ -471,69 +486,84 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
             />
 
             {/* Table of Contents */}
-            <TableOfContentsPage categories={tocCategories} />
+            <TableOfContentsPage
+              categories={tocCategories}
+              isPreview={!pdfGenerating}
+            />
 
             {/* Category Summary Pages (1-6) */}
-            {Object.entries(CATEGORY_MAP).map(([categoryId, categoryLabel]) => {
-              const allClusters = getTopClustersByCategory(clusters, Number(categoryId), Infinity);
-              const catId = Number(categoryId);
-              const totalCategoryPages = allClusters.length === 0 ? 1 : Math.ceil(allClusters.length / 3);
+            {(() => {
+              let globalPageCounter = 3; // Cover(1) + TOC(2) + start from 3
 
-              if (pdfGenerating) {
-                // PDF 생성 모드: 모든 페이지 렌더링
-                if (allClusters.length === 0) {
+              return Object.entries(CATEGORY_MAP).map(([categoryId, categoryLabel]) => {
+                const allClusters = getTopClustersByCategory(clusters, Number(categoryId), Infinity);
+                const catId = Number(categoryId);
+                const totalCategoryPages = allClusters.length === 0 ? 1 : Math.ceil(allClusters.length / 3);
+
+                if (pdfGenerating) {
+                  // PDF 생성 모드: 모든 페이지 렌더링
+                  if (allClusters.length === 0) {
+                    const pageNum = globalPageCounter;
+                    globalPageCounter += 1;
+
+                    return (
+                      <CategorySummaryPage
+                        key={`${categoryId}-pdf-empty`}
+                        categoryId={catId}
+                        categoryLabel={categoryLabel}
+                        clusters={[]}
+                        currentPage={1}
+                        totalPages={1}
+                        isPreview={false}
+                        globalPageNumber={pageNum}
+                      />
+                    );
+                  }
+
+                  const pages = [];
+                  for (let i = 0; i < allClusters.length; i += 3) {
+                    const pageClusters = allClusters.slice(i, i + 3);
+                    const pageNum = Math.floor(i / 3) + 1;
+                    const globalPageNum = globalPageCounter;
+                    globalPageCounter += 1;
+
+                    pages.push(
+                      <CategorySummaryPage
+                        key={`${categoryId}-pdf-page-${pageNum}`}
+                        categoryId={catId}
+                        categoryLabel={categoryLabel}
+                        clusters={pageClusters}
+                        clusterStartIndex={i}
+                        currentPage={pageNum}
+                        totalPages={totalCategoryPages}
+                        isPreview={false}
+                        globalPageNumber={globalPageNum}
+                      />
+                    );
+                  }
+                  return pages;
+                } else {
+                  // 웹뷰 모드: 현재 페이지만 렌더링
+                  const currentCategoryPage = categoryPages[catId] || 1;
+                  const startIdx = (currentCategoryPage - 1) * 3;
+                  const pageClusters = allClusters.slice(startIdx, startIdx + 3);
+
                   return (
                     <CategorySummaryPage
-                      key={`${categoryId}-pdf-empty`}
-                      categoryId={catId}
-                      categoryLabel={categoryLabel}
-                      clusters={[]}
-                      currentPage={1}
-                      totalPages={1}
-                      isPreview={false}
-                    />
-                  );
-                }
-
-                const pages = [];
-                for (let i = 0; i < allClusters.length; i += 3) {
-                  const pageClusters = allClusters.slice(i, i + 3);
-                  const pageNum = Math.floor(i / 3) + 1;
-                  pages.push(
-                    <CategorySummaryPage
-                      key={`${categoryId}-pdf-page-${pageNum}`}
+                      key={`${categoryId}-preview`}
                       categoryId={catId}
                       categoryLabel={categoryLabel}
                       clusters={pageClusters}
-                      clusterStartIndex={i}
-                      currentPage={pageNum}
+                      clusterStartIndex={startIdx}
+                      currentPage={currentCategoryPage}
                       totalPages={totalCategoryPages}
-                      isPreview={false}
+                      onPageChange={(page) => handleCategoryPageChange(catId, page)}
+                      isPreview={true}
                     />
                   );
                 }
-                return pages;
-              } else {
-                // 웹뷰 모드: 현재 페이지만 렌더링
-                const currentCategoryPage = categoryPages[catId] || 1;
-                const startIdx = (currentCategoryPage - 1) * 3;
-                const pageClusters = allClusters.slice(startIdx, startIdx + 3);
-
-                return (
-                  <CategorySummaryPage
-                    key={`${categoryId}-preview`}
-                    categoryId={catId}
-                    categoryLabel={categoryLabel}
-                    clusters={pageClusters}
-                    clusterStartIndex={startIdx}
-                    currentPage={currentCategoryPage}
-                    totalPages={totalCategoryPages}
-                    onPageChange={(page) => handleCategoryPageChange(catId, page)}
-                    isPreview={true}
-                  />
-                );
-              }
-            })}
+              });
+            })()}
           </Box>
         )}
       </DialogContent>

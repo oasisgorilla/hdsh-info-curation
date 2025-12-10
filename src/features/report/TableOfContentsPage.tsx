@@ -9,6 +9,7 @@ export type TOCCategory = {
 
 type TableOfContentsPageProps = {
   categories: TOCCategory[];
+  isPreview?: boolean;
 };
 
 // 카테고리별 설명 매핑
@@ -37,7 +38,7 @@ const getCategoryDisplayName = (label: TOCCategory['label']): string => {
   return displayNameMap[label] || label;
 };
 
-function TableOfContentsPage({ categories }: TableOfContentsPageProps) {
+function TableOfContentsPage({ categories, isPreview = false }: TableOfContentsPageProps) {
   return (
     <Box
       className="report-page"

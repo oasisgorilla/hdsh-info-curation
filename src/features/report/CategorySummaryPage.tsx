@@ -11,6 +11,7 @@ function CategorySummaryPage({
   totalPages = 1,
   onPageChange,
   isPreview = false,
+  globalPageNumber,
 }: CategorySummaryPageProps) {
   const handlePrevPage = () => {
     if (onPageChange && currentPage > 1) {
@@ -59,6 +60,19 @@ function CategorySummaryPage({
         >
           {categoryLabel}
         </Typography>
+
+        {/* Page Number (PDF mode only, center) */}
+        {!isPreview && globalPageNumber && (
+          <Typography
+            variant="body2"
+            sx={{
+              fontWeight: 600,
+              color: 'text.secondary',
+            }}
+          >
+            p. {globalPageNumber}
+          </Typography>
+        )}
 
         {/* Navigation Controls (Preview mode only) */}
         {isPreview && totalPages > 1 && (
