@@ -11,7 +11,6 @@ import { extractTopKeywords, groupIssuesByCategory, getMaxIssueSize } from '../u
 type ReportData = {
   weekNumber: number;
   dateRange: string;
-  status: '완료됨' | '읽음';
   keywords: string[];
   categories: CategoryIssue[];
 };
@@ -50,7 +49,6 @@ function WeeklyReportPage() {
           const report: ReportData = {
             weekNumber: 48,
             dateRange: '2025.11.25 - 12.01',
-            status: '완료됨',
             keywords,
             categories,
           };
@@ -110,7 +108,6 @@ function WeeklyReportPage() {
             <ReportCard
               weekNumber={reportData.weekNumber}
               dateRange={reportData.dateRange}
-              status={reportData.status}
               keywords={reportData.keywords}
               categories={reportData.categories.map(category => ({
                 ...category,

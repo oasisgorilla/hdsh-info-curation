@@ -1,5 +1,4 @@
 import { Card, Box, Typography, Button, SvgIcon } from '@mui/material';
-import StatusBadge from '../../components/atomic/StatusBadge';
 import KeywordTag from '../../components/atomic/KeywordTag';
 import IssueBar from './IssueBar';
 import { colors } from '../../styles/theme';
@@ -17,7 +16,6 @@ export type CategoryIssue = {
 export type ReportCardProps = {
   weekNumber: number;
   dateRange: string;
-  status: '완료됨' | '읽음';
   keywords: string[];
   categories: CategoryIssue[];
   onToggle?: () => void;
@@ -27,7 +25,6 @@ export type ReportCardProps = {
 function ReportCard({
   weekNumber,
   dateRange,
-  status,
   keywords,
   categories,
   onToggle
@@ -117,7 +114,6 @@ function ReportCard({
               <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
                 조선업 정보 주간 AI 리포트
               </Typography>
-              <StatusBadge status={status} />
             </Box>
             {onToggle && (
               <Button
