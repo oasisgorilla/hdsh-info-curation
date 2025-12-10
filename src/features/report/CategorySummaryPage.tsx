@@ -162,7 +162,7 @@ function CategorySummaryPage({
 
                 {/* Meta Info (Score + Size) */}
                 <Stack direction="row" spacing={0.5} sx={{ mb: 1 }}>
-                  {cluster.score !== null && (
+                  {/* {cluster.score !== null && (
                     <Chip
                       label={`점수: ${cluster.score.toFixed(1)}`}
                       size="small"
@@ -174,7 +174,7 @@ function CategorySummaryPage({
                         height: '20px',
                       }}
                     />
-                  )}
+                  )} */}
                   <Chip
                     label={`이슈 규모: ${cluster.size}건`}
                     size="small"
