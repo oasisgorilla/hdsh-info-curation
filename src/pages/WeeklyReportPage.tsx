@@ -37,7 +37,7 @@ function WeeklyReportPage() {
 
         if (response.success && response.data) {
           // Extract top 3 keywords by size
-          const keywords = extractTopKeywords(response.data, 3);
+          const keywords = extractTopKeywords(response.data, 4);
 
           // Group issues by category
           const categories = groupIssuesByCategory(response.data);
