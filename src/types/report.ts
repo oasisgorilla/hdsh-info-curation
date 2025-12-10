@@ -56,6 +56,8 @@ export interface CoverPageProps {
 // Table of Contents Props
 export interface TableOfContentsPageProps {
   categories: Array<{ id: number; label: string; pageNumber: number }>;
+  isPreview?: boolean;
+  onNavigate?: (pageNumber: number) => void; // Callback for page navigation (web view only)
 }
 
 // Category Summary Page Props
@@ -69,4 +71,5 @@ export interface CategorySummaryPageProps {
   onPageChange?: (page: number) => void; // Callback for page navigation (web view only)
   isPreview?: boolean; // true for web view (with navigation), false for PDF
   globalPageNumber?: number; // Global PDF page number (for PDF mode only)
+  pageId?: string; // Unique page identifier for navigation (e.g., "report-page-3")
 }

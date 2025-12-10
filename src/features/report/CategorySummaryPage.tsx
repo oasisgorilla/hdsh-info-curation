@@ -12,6 +12,7 @@ function CategorySummaryPage({
   onPageChange,
   isPreview = false,
   globalPageNumber,
+  pageId,
 }: CategorySummaryPageProps) {
   const handlePrevPage = () => {
     if (onPageChange && currentPage > 1) {
@@ -27,6 +28,7 @@ function CategorySummaryPage({
 
   return (
     <Box
+      id={pageId}
       className="report-page"
       sx={{
         width: '210mm',

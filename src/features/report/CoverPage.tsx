@@ -4,6 +4,7 @@ import type { CoverPageProps } from '../../types/report';
 function CoverPage({ weekNumber, dateRange, totalNews, totalIssues }: CoverPageProps) {
   return (
     <Box
+      id="report-page-1"
       className="report-page"
       sx={{
         width: '210mm',

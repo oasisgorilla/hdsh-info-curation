@@ -191,13 +191,23 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
   const scrollToPage = (pageNumber: number) => {
     if (!contentRef.current || !reportRef.current) return;
 
-    const pages = reportRef.current.querySelectorAll('.report-page');
-    if (pageNumber < 1 || pageNumber > pages.length) return;
+    // Try to find page by ID first (more reliable)
+    const pageId = `report-page-${pageNumber}`;
+    const targetPage = document.getElementById(pageId);
 
-    const targetPage = pages[pageNumber - 1];
     if (targetPage) {
       targetPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setCurrentPage(pageNumber);
+    } else {
+      // Fallback to old method if ID not found
+      const pages = reportRef.current.querySelectorAll('.report-page');
+      if (pageNumber < 1 || pageNumber > pages.length) return;
+
+      const fallbackPage = pages[pageNumber - 1];
+      if (fallbackPage) {
+        fallbackPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        setCurrentPage(pageNumber);
+      }
     }
   };
 
@@ -489,6 +499,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
             <TableOfContentsPage
               categories={tocCategories}
               isPreview={!pdfGenerating}
+              onNavigate={!pdfGenerating ? scrollToPage : undefined}
             />
 
             {/* Category Summary Pages (1-6) */}
@@ -516,6 +527,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
                         totalPages={1}
                         isPreview={false}
                         globalPageNumber={pageNum}
+                        pageId={`report-page-${pageNum}`}
                       />
                     );
                   }
@@ -538,6 +550,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
                         totalPages={totalCategoryPages}
                         isPreview={false}
                         globalPageNumber={globalPageNum}
+                        pageId={`report-page-${globalPageNum}`}
                       />
                     );
                   }
@@ -547,6 +560,8 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
                   const currentCategoryPage = categoryPages[catId] || 1;
                   const startIdx = (currentCategoryPage - 1) * 3;
                   const pageClusters = allClusters.slice(startIdx, startIdx + 3);
+                  const pageNum = globalPageCounter;
+                  globalPageCounter += 1;
 
                   return (
                     <CategorySummaryPage
@@ -559,6 +574,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
                       totalPages={totalCategoryPages}
                       onPageChange={(page) => handleCategoryPageChange(catId, page)}
                       isPreview={true}
+                      pageId={`report-page-${pageNum}`}
                     />
                   );
                 }

@@ -10,6 +10,7 @@ export type TOCCategory = {
 type TableOfContentsPageProps = {
   categories: TOCCategory[];
   isPreview?: boolean;
+  onNavigate?: (pageNumber: number) => void;
 };
 
 // 카테고리별 설명 매핑
@@ -38,9 +39,10 @@ const getCategoryDisplayName = (label: TOCCategory['label']): string => {
   return displayNameMap[label] || label;
 };
 
-function TableOfContentsPage({ categories, isPreview = false }: TableOfContentsPageProps) {
+function TableOfContentsPage({ categories, isPreview = false, onNavigate }: TableOfContentsPageProps) {
   return (
     <Box
+      id="report-page-2"
       className="report-page"
       sx={{
         width: '210mm',
@@ -206,6 +208,11 @@ function TableOfContentsPage({ categories, isPreview = false }: TableOfContentsP
         {categories.map((item) => (
           <Box
             key={item.id}
+            onClick={() => {
+              if (isPreview && onNavigate) {
+                onNavigate(item.pageNumber);
+              }
+            }}
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
@@ -213,6 +220,11 @@ function TableOfContentsPage({ categories, isPreview = false }: TableOfContentsP
               py: 1.9,
               borderBottom: '1px dashed',
               borderColor: 'grey.400',
+              cursor: isPreview && onNavigate ? 'pointer' : 'default',
+              transition: 'background-color 0.2s',
+              '&:hover': isPreview && onNavigate ? {
+                bgcolor: 'action.hover',
+              } : {},
             }}
           >
             <Box
