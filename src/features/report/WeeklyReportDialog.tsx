@@ -574,6 +574,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
                       totalPages={totalCategoryPages}
                       onPageChange={(page) => handleCategoryPageChange(catId, page)}
                       isPreview={true}
+                      globalPageNumber={pageNum}
                       pageId={`report-page-${pageNum}`}
                     />
                   );

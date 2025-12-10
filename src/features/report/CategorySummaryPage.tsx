@@ -63,8 +63,7 @@ function CategorySummaryPage({
           {categoryLabel}
         </Typography>
 
-        {/* Page Number (PDF mode only, center) */}
-        {!isPreview && globalPageNumber && (
+        {globalPageNumber && (
           <Typography
             variant="body2"
             sx={{
