@@ -13,11 +13,55 @@ type ReportData = {
   dateRange: string;
   keywords: string[];
   categories: CategoryIssue[];
+  reportDate: string; // Added to track the API date parameter
 };
+
+// Helper function to generate report dates (every Saturday from 2025-12-07)
+function generateReportDates(): string[] {
+  const dates: string[] = [];
+  const startDate = new Date('2025-12-07');
+  const today = new Date();
+
+  let currentDate = new Date(startDate);
+
+  while (currentDate <= today) {
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    dates.push(`${year}-${month}-${day}`);
+
+    // Add 7 days for next week
+    currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+  }
+
+  return dates.reverse(); // Most recent first
+}
+
+// Helper function to get week number from date
+function getWeekNumber(dateString: string): number {
+  const date = new Date(dateString);
+  const startOfYear = new Date(date.getFullYear(), 0, 1);
+  const days = Math.floor((date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
+  return Math.ceil((days + startOfYear.getDay() + 1) / 7);
+}
+
+// Helper function to get date range (7 days ending on the given date)
+function getDateRange(endDateString: string): string {
+  const endDate = new Date(endDateString);
+  const startDate = new Date(endDate.getTime() - 6 * 24 * 60 * 60 * 1000);
+
+  const formatDate = (date: Date) => {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${month}.${day}`;
+  };
+
+  return `2025.${formatDate(startDate)} - ${formatDate(endDate)}`;
+}
 
 function WeeklyReportPage() {
   const [activeTab, setActiveTab] = useState('주간 보고서');
-  const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [reportDataList, setReportDataList] = useState<ReportData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalReports, setTotalReports] = useState(0);
@@ -27,55 +71,65 @@ function WeeklyReportPage() {
   const [selectedReportDate, setSelectedReportDate] = useState<string>('');
 
   useEffect(() => {
-    const loadReport = async () => {
+    const loadReports = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        // Fetch report for 2025-12-02 (only available data for now)
-        const response = await fetchReport({ date: '2025-12-02' });
+        const reportDates = generateReportDates();
+        const reports: ReportData[] = [];
 
-        if (response.success && response.data) {
-          // Extract top 3 keywords by size
-          const keywords = extractTopKeywords(response.data, 4);
+        // Fetch all reports
+        for (const date of reportDates) {
+          try {
+            const response = await fetchReport({ date });
 
-          // Group issues by category
-          const categories = groupIssuesByCategory(response.data);
+            if (response.success && response.data) {
+              // Extract top 4 keywords by size
+              const keywords = extractTopKeywords(response.data, 4);
 
-          // Get max size for normalization
-          getMaxIssueSize(response.data);
+              // Group issues by category
+              const categories = groupIssuesByCategory(response.data);
 
-          // Create report data
-          const report: ReportData = {
-            weekNumber: 48,
-            dateRange: '2025.11.25 - 12.01',
-            keywords,
-            categories,
-          };
+              // Get max size for normalization
+              getMaxIssueSize(response.data);
 
-          setReportData(report);
-          setTotalReports(1); // Currently only 1 report available
-        } else {
-          setError(response.error || '데이터를 불러올 수 없습니다.');
+              // Create report data
+              const report: ReportData = {
+                weekNumber: getWeekNumber(date),
+                dateRange: getDateRange(date),
+                keywords,
+                categories,
+                reportDate: date,
+              };
+
+              reports.push(report);
+            }
+          } catch (err) {
+            console.error(`Failed to fetch report for ${date}:`, err);
+            // Continue fetching other reports even if one fails
+          }
         }
+
+        setReportDataList(reports);
+        setTotalReports(reports.length);
       } catch (err) {
-        console.error('Failed to fetch report:', err);
+        console.error('Failed to fetch reports:', err);
         setError('보고서를 불러오는 중 오류가 발생했습니다.');
       } finally {
         setLoading(false);
       }
     };
 
-    loadReport();
+    loadReports();
   }, []);
 
   const handleDownload = (weekNumber: number) => {
     console.log(`다운로드: ${weekNumber}주차 리포트`);
   };
 
-  const handleToggle = () => {
-    // Currently only 2025-12-02 data is available
-    setSelectedReportDate('2025-12-02');
+  const handleToggle = (reportDate: string) => {
+    setSelectedReportDate(reportDate);
     setDialogOpen(true);
   };
 
@@ -103,24 +157,34 @@ function WeeklyReportPage() {
         )}
 
         {/* Report Data */}
-        {!loading && !error && reportData && (
+        {!loading && !error && reportDataList.length > 0 && (
           <Stack spacing={3}>
-            <ReportCard
-              weekNumber={reportData.weekNumber}
-              dateRange={reportData.dateRange}
-              keywords={reportData.keywords}
-              categories={reportData.categories.map(category => ({
-                ...category,
-                issues: category.issues.map(issue => ({
-                  ...issue,
-                  // Normalize size relative to maxSize
-                  size: issue.size
-                }))
-              }))}
-              onDownload={() => handleDownload(reportData.weekNumber)}
-              onToggle={() => handleToggle()}
-            />
+            {reportDataList.map((report) => (
+              <ReportCard
+                key={report.reportDate}
+                weekNumber={report.weekNumber}
+                dateRange={report.dateRange}
+                keywords={report.keywords}
+                categories={report.categories.map(category => ({
+                  ...category,
+                  issues: category.issues.map(issue => ({
+                    ...issue,
+                    // Normalize size relative to maxSize
+                    size: issue.size
+                  }))
+                }))}
+                onDownload={() => handleDownload(report.weekNumber)}
+                onToggle={() => handleToggle(report.reportDate)}
+              />
+            ))}
           </Stack>
+        )}
+
+        {/* No Reports State */}
+        {!loading && !error && reportDataList.length === 0 && (
+          <Alert severity="info">
+            생성된 주간 보고서가 없습니다.
+          </Alert>
         )}
       </Container>
 
