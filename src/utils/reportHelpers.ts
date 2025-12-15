@@ -64,15 +64,30 @@ export function getMaxIssueSize(data: ClusteredNewsRead[]): number {
 
 /**
  * Format date to week number and date range
- * For now, returns static values since we only have 2025-12-02 data
+ * Calculates week number from the start of the year
+ * Returns date range as 7 days ending on the given date
  */
-export function formatWeekInfo(_date: string): { weekNumber: number; dateRange: string } {
-  // TODO: Implement proper week calculation when more data is available
-  // For now, return week 48 for 2025-12-02
-  return {
-    weekNumber: 48,
-    dateRange: '2025.11.25 - 12.01',
+export function formatWeekInfo(dateString: string): { weekNumber: number; dateRange: string } {
+  const date = new Date(dateString);
+
+  // Calculate week number
+  const startOfYear = new Date(date.getFullYear(), 0, 1);
+  const days = Math.floor((date.getTime() - startOfYear.getTime()) / (24 * 60 * 60 * 1000));
+  const weekNumber = Math.ceil((days + startOfYear.getDay() + 1) / 7);
+
+  // Calculate date range (7 days ending on the given date)
+  const endDate = new Date(dateString);
+  const startDate = new Date(endDate.getTime() - 6 * 24 * 60 * 60 * 1000);
+
+  const formatDate = (d: Date) => {
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${month}.${day}`;
   };
+
+  const dateRange = `2025.${formatDate(startDate)} - ${formatDate(endDate)}`;
+
+  return { weekNumber, dateRange };
 }
 
 /**
