@@ -18,7 +18,7 @@ function LoginPage() {
 
     try {
       await authService.login({ username, password });
-      navigate('/main');
+      navigate('/news-list');
     } catch (err: any) {
       if (err.response?.status === 422) {
         setError('입력값을 확인해주세요.');

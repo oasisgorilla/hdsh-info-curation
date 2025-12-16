@@ -49,20 +49,20 @@ type HeaderProps = {
   onTabChange?: (tab: string) => void;
 };
 
-function Header({ activeTab = '뉴스 검색', onTabChange }: HeaderProps) {
+function Header({ activeTab = '뉴스', onTabChange }: HeaderProps) {
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const location = useLocation()
 
   const handleLogoClick = () => {
-    if (location.pathname === '/main') {
+    if (location.pathname === '/news-list') {
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
       });
     } else {
-      navigate('/main');
+      navigate('/news-list');
     }
   };
   
@@ -70,8 +70,6 @@ function Header({ activeTab = '뉴스 검색', onTabChange }: HeaderProps) {
     onTabChange?.(tab);
     if (tab === '뉴스') {
       navigate('/news-list');
-    } else if (tab === '뉴스 검색') {
-      navigate('/main');
     } else if (tab === '주간 보고서') {
       navigate('/weekly-report');
     }
@@ -137,11 +135,6 @@ function Header({ activeTab = '뉴스 검색', onTabChange }: HeaderProps) {
             label="뉴스"
             active={activeTab === '뉴스'}
             onClick={() => handleTabClick('뉴스')}
-          />
-          <NavItem
-            label="뉴스 검색"
-            active={activeTab === '뉴스 검색'}
-            onClick={() => handleTabClick('뉴스 검색')}
           />
           <NavItem
             label="주간 보고서"

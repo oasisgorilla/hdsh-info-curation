@@ -50,12 +50,12 @@ function NewsDetailPage() {
   }, [newsId]);
 
   const handleBack = () => {
-    navigate('/main');
+    navigate('/news-list');
   };
 
   return (
     <Box sx={{ minHeight: '100vh', bgcolor: 'grey.50' }}>
-      <Header activeTab="뉴스 검색" />
+      <Header activeTab="뉴스" />
 
       <Container component="main" maxWidth="lg" sx={{ py: 4 }}>
         {/* Back Button */}
