@@ -1,3 +1,5 @@
+// NOTE: 이 페이지는 '뉴스 검색' 탭에서 계속 사용됩니다.
+// 헤드라인 뉴스는 새로운 '/news-list' 라우트의 HeadlineNewsPage에서 처리됩니다.
 import { useState, useEffect, useMemo } from "react";
 import { Box, Container, CircularProgress, Typography } from "@mui/material";
 import Header from "../components/common/Header";

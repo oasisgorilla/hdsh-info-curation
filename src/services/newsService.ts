@@ -5,9 +5,12 @@ import type {
   NewsListParams,
   NewsSearchResponse,
   NewsSearchParams,
-  NewsDetailItem
+  NewsDetailItem,
+  HeadlineNewsParams,
+  HeadlineNewsClusterResponse
 } from '../types/news';
 
+// LEGACY: '뉴스 검색' 탭(MainPage)에서 계속 사용됨. 신규 헤드라인은 fetchHeadlineNews 사용
 export async function fetchNewsList(
   params?: NewsListParams
 ): Promise<ApiResponse<NewsListResponse>> {
@@ -39,4 +42,19 @@ export async function fetchNewsDetail(
   newsId: string
 ): Promise<ApiResponse<NewsDetailItem>> {
   return apiClient.get<ApiResponse<NewsDetailItem>>(`/api/news/${newsId}`);
+}
+
+export async function fetchHeadlineNews(
+  params?: HeadlineNewsParams
+): Promise<ApiResponse<HeadlineNewsClusterResponse>> {
+  return apiClient.get<ApiResponse<HeadlineNewsClusterResponse>>('/api/news/headline', {
+    params: {
+      created_at: params?.created_at,
+      start_date: params?.start_date,
+      end_date: params?.end_date,
+      category_id: params?.category_id,
+      offset: params?.offset,
+      limit: params?.limit,
+    },
+  });
 }

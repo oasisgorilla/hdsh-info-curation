@@ -3,6 +3,7 @@ import LoginPage from './pages/LoginPage';
 import MainPage from './pages/MainPage';
 import WeeklyReportPage from './pages/WeeklyReportPage';
 import NewsDetailPage from './pages/NewsDetailPage';
+import HeadlineNewsPage from './pages/HeadlineNewsPage';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/news-list" element={<HeadlineNewsPage />} />
         <Route path="/main" element={<MainPage />} />
         <Route path="/weekly-report" element={<WeeklyReportPage />} />
         <Route path="/news/:newsId" element={<NewsDetailPage />} />

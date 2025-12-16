@@ -65,3 +65,41 @@ export interface NewsDetailItem {
   image_url: string;
   origin_url: string;
 }
+
+// Headline News Types
+export interface HeadlineRepresentative {
+  news_id: string;
+  title: string;
+  provider: string;
+  image_url: string;
+  published_at: string;
+  news_category_id: number;
+}
+
+export interface HeadlineNewsItem {
+  news_id: string;
+  title: string;
+}
+
+export interface HeadlineNewsCluster {
+  id: number;
+  category_id: number;
+  created_at: string;
+  size: number;
+  representative: HeadlineRepresentative;
+  items: HeadlineNewsItem[];
+}
+
+export interface HeadlineNewsClusterResponse {
+  total: number;
+  items: HeadlineNewsCluster[];
+}
+
+export interface HeadlineNewsParams {
+  created_at?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  category_id?: number | null;
+  offset?: number;
+  limit?: number;
+}
