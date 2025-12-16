@@ -7,7 +7,8 @@ import type {
   NewsSearchParams,
   NewsDetailItem,
   HeadlineNewsParams,
-  HeadlineNewsClusterResponse
+  HeadlineNewsClusterResponse,
+  HeadlineSearchParams
 } from '../types/news';
 
 // LEGACY: '뉴스 검색' 탭(MainPage)에서 계속 사용됨. 신규 헤드라인은 fetchHeadlineNews 사용
@@ -54,6 +55,17 @@ export async function fetchHeadlineNews(
       end_date: params?.end_date,
       category_id: params?.category_id,
       offset: params?.offset,
+      limit: params?.limit,
+    },
+  });
+}
+
+export async function searchHeadlineNews(
+  params?: HeadlineSearchParams
+): Promise<ApiResponse<HeadlineNewsClusterResponse>> {
+  return apiClient.get<ApiResponse<HeadlineNewsClusterResponse>>('/api/search/headline', {
+    params: {
+      q: params?.q,
       limit: params?.limit,
     },
   });

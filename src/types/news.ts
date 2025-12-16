@@ -103,3 +103,8 @@ export interface HeadlineNewsParams {
   offset?: number;
   limit?: number;
 }
+
+export interface HeadlineSearchParams {
+  q?: string | null;
+  limit?: number;
+}
