@@ -1,5 +1,12 @@
-import { Card, CardMedia, CardContent, Box, Typography, Chip } from "@mui/material";
-import DescriptionIcon from '@mui/icons-material/Description';
+import {
+  Card,
+  CardMedia,
+  CardContent,
+  Box,
+  Typography,
+  Chip,
+} from "@mui/material";
+import DescriptionIcon from "@mui/icons-material/Description";
 import Tag from "../../components/atomic/Tag";
 import type { HeadlineNewsCluster } from "../../types/news";
 
@@ -13,6 +20,7 @@ type TagVariant =
 
 export type HeadlineNewsCardProps = {
   cluster: HeadlineNewsCluster;
+  chipClickHandler?: (cluster: HeadlineNewsCluster) => void;
   onClick?: () => void;
 };
 
@@ -42,7 +50,11 @@ function formatDate(dateString: string): string {
   return `${year}-${month}-${day}`;
 }
 
-function HeadlineNewsCard({ cluster, onClick }: HeadlineNewsCardProps) {
+function HeadlineNewsCard({
+  cluster,
+  chipClickHandler,
+  onClick,
+}: HeadlineNewsCardProps) {
   const { representative, size } = cluster;
   const tag = categoryToTag[representative.news_category_id] || "domestic";
   const tagLabel = categoryLabels[representative.news_category_id] || "";
@@ -144,6 +156,10 @@ function HeadlineNewsCard({ cluster, onClick }: HeadlineNewsCardProps) {
       {/* Badge: Document Icon + Count */}
       <Chip
         icon={<DescriptionIcon sx={{ fontSize: 16 }} />}
+        onClick={(e) => {
+          e.stopPropagation(); // 카드 클릭 이벤트 전파 방지
+          chipClickHandler?.(cluster);
+        }}
         label={size}
         size="small"
         sx={{
@@ -154,6 +170,7 @@ function HeadlineNewsCard({ cluster, onClick }: HeadlineNewsCardProps) {
           color: "white",
           fontSize: "0.75rem",
           height: 24,
+          cursor: "pointer",
           "& .MuiChip-icon": { color: "white" },
         }}
       />
