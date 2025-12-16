@@ -27,7 +27,7 @@ export interface ApiResponse<T> {
 //   source?: NewsSource | null;
 //   offset?: number;
 //   limit?: number;
-}
+// }
 
 // export interface SearchNewsItem {
 //   news_id: string;
