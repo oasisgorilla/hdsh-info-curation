@@ -77,16 +77,18 @@ function HeadlineNewsPage() {
           }
         } else {
           // === 일반 모드 (기존 코드 유지) ===
-          const KST_OFFSET = 9 * 60 * 60 * 1000; // 9시간
+          
+          // const KST_OFFSET = 9 * 60 * 60 * 1000; // 9시간
           // const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-          const yesterdayKST = new Date(
-            Date.now() + KST_OFFSET - 24 * 60 * 60 * 1000
-          ).toISOString().split('T')[0];
+          // const yesterdayKST = new Date(
+          //   Date.now() + KST_OFFSET - 24 * 60 * 60 * 1000
+          // ).toISOString().split('T')[0];
+
           const categoryId = categoryMap[selectedCategory];
           const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
           const response = await fetchHeadlineNews({
-            created_at: yesterdayKST, // 백엔드에서 당일 헤드라인을 지원하지 않음
+            // created_at: yesterdayKST, // 해당 날짜의 헤드라인만 요청
             category_id: categoryId,
             offset,
             limit: ITEMS_PER_PAGE,
