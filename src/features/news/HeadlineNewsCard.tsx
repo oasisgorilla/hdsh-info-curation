@@ -166,12 +166,12 @@ function HeadlineNewsCard({
           position: "absolute",
           bottom: 12,
           right: 12,
-          bgcolor: "rgba(0, 0, 0, 0.5)",
-          color: "white",
+          bgcolor: "grey.200",
+          color: "grey.600",
           fontSize: "0.75rem",
           height: 24,
           cursor: "pointer",
-          "& .MuiChip-icon": { color: "white" },
+          "& .MuiChip-icon": { color: "grey.600" },
         }}
       />
     </Card>
