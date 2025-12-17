@@ -153,6 +153,7 @@ function HeadlineNewsListDialog({ open, onClose, items, title }: HeadlineNewsLis
                           transition: 'font-weight 0.2s ease',
                           '.MuiListItemButton-root:hover &': {
                             fontWeight: 800,
+                            textDecoration: 'underline',
                           },
                         },
                       },
