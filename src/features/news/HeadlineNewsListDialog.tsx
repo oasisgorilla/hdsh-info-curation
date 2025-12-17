@@ -150,6 +150,10 @@ function HeadlineNewsListDialog({ open, onClose, items, title }: HeadlineNewsLis
                           color: 'text.primary',
                           lineHeight: 1.5,
                           letterSpacing: '-0.01em',
+                          transition: 'font-weight 0.2s ease',
+                          '.MuiListItemButton-root:hover &': {
+                            fontWeight: 800,
+                          },
                         },
                       },
                     }}
