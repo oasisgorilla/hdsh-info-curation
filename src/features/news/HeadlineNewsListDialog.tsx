@@ -25,38 +25,40 @@ function HeadlineNewsListDialog({ open, onClose, items, title }: HeadlineNewsLis
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          pb: 2,
-          fontSize: '15px',
-          fontWeight: 600,
-          color: 'text.secondary',
-          lineHeight: 1.2,
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          pr: 6,
-          position: 'relative',
-          pl: 3,
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            left: 16,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            width: '3px',
-            height: '16px',
-            bgcolor: 'primary.main',
-            borderRadius: '2px',
-          },
+          pb: 1,
+          pt: 3,
+          pr: 2,
         }}
       >
-        {title}
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+          <Box
+            sx={{
+              width: '3px',
+              height: '16px',
+              bgcolor: 'primary.main',
+              borderRadius: '2px',
+              flexShrink: 0,
+            }}
+          />
+          <Typography
+            sx={{
+              fontSize: '15px',
+              fontWeight: 600,
+              color: 'text.secondary',
+              lineHeight: 1.2,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {title}
+          </Typography>
+        </Box>
         <IconButton
           onClick={onClose}
           size="small"
           sx={{
-            position: 'absolute',
-            right: 16,
-            top: 16,
+            flexShrink: 0,
           }}
         >
           <CloseIcon />
