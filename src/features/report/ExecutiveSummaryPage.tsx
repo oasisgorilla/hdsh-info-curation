@@ -126,26 +126,43 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
         </Typography>
 
         {/* Paragraph 4: Category diff_ratio analysis (only if there are changes and not first report) */}
-        {!isFirstReport && (increases || decreases) && (
-          <Typography
-            variant="body1"
-            sx={{
-              lineHeight: 1.8,
-            }}
-          >
-            {increases && (
-              <span>{increases} 카테고리에서 뉴스 건수 증가가 나타났으며</span>
-            )}
-            {increases && decreases && ', '}
-            {decreases && (
-              <span>{decreases} 카테고리는 전주 대비 감소했습니다.</span>
-            )}
-            {increases && !decreases && '.'}
-            {!increases && decreases && (
-              <span>{decreases} 카테고리는 전주 대비 감소했습니다.</span>
-            )}
-          </Typography>
-        )}
+        {!isFirstReport && (() => {
+          const increasesCount = Object.values(data.category_stats).filter(s => s.diff_ratio > 0).length;
+          const decreasesCount = Object.values(data.category_stats).filter(s => s.diff_ratio < 0).length;
+          const totalCategories = Object.keys(data.category_stats).length;
+
+          let diffRatioText = '';
+
+          if (increasesCount === totalCategories) {
+            // All categories increased
+            diffRatioText = '전체 카테고리가 전주 대비 증가했습니다.';
+          } else if (decreasesCount === totalCategories) {
+            // All categories decreased
+            diffRatioText = '전체 카테고리가 전주 대비 감소했습니다.';
+          } else if (increasesCount > 0 && decreasesCount > 0) {
+            // Mixed: some increased, some decreased
+            diffRatioText = `${increases} 카테고리에서 뉴스 건수 증가가 나타났으며, ${decreases} 카테고리는 전주 대비 감소했습니다.`;
+          } else if (increasesCount > 0) {
+            // Only increases (some categories)
+            diffRatioText = `${increases} 카테고리에서 뉴스 건수 증가가 나타났습니다.`;
+          } else if (decreasesCount > 0) {
+            // Only decreases (some categories)
+            diffRatioText = `${decreases} 카테고리는 전주 대비 감소했습니다.`;
+          }
+
+          if (!diffRatioText) return null;
+
+          return (
+            <Typography
+              variant="body1"
+              sx={{
+                lineHeight: 1.8,
+              }}
+            >
+              {diffRatioText}
+            </Typography>
+          );
+        })()}
       </Box>
 
       {/* Top 4 Issues Section */}
