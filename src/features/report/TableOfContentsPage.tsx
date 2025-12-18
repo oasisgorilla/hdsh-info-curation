@@ -204,6 +204,64 @@ function TableOfContentsPage({ categories, isPreview = false, onNavigate }: Tabl
           </Typography>
         </Box>
 
+        {/* Executive Summary Page */}
+        <Box
+          onClick={() => {
+            if (isPreview && onNavigate) {
+              onNavigate(3);
+            }
+          }}
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            py: 1.9,
+            borderBottom: '1px dashed',
+            borderColor: 'grey.400',
+            cursor: isPreview && onNavigate ? 'pointer' : 'default',
+            transition: 'background-color 0.2s',
+            '&:hover': isPreview && onNavigate ? {
+              bgcolor: 'action.hover',
+            } : {},
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+            }}
+          >
+            <Box
+              sx={{
+                width: 35,
+                height: 35,
+                borderRadius: '50%',
+                bgcolor: colors.category.overseas.light,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Typography
+                sx={{
+                  fontSize: '14px',
+                  fontWeight: 700,
+                  color: colors.text.primary,
+                }}
+              >
+                3
+              </Typography>
+            </Box>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              Executive Summary
+            </Typography>
+          </Box>
+          <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.secondary' }}>
+            p. 3
+          </Typography>
+        </Box>
+
         {/* Category Pages */}
         {categories.map((item) => (
           <Box

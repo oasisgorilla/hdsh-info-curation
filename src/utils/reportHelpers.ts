@@ -1,4 +1,4 @@
-import type { ClusteredNewsRead } from '../types/report';
+import type { ClusteredNewsRead, CategoryStat } from '../types/report';
 import type { CategoryIssue } from '../features/report/ReportCard';
 
 const CATEGORY_NAMES: Record<number, string> = {
@@ -9,6 +9,8 @@ const CATEGORY_NAMES: Record<number, string> = {
   5: '기술·R&D',
   6: '정책·규제',
 };
+
+export { CATEGORY_NAMES };
 
 /**
  * Extract top 3 keywords (representative_title) with the highest size across all categories
@@ -117,4 +119,100 @@ export function getTopClustersByCategory(
       ...cluster,
       items: maxItemsPerCluster ? cluster.items.slice(0, maxItemsPerCluster) : cluster.items
     }));
+}
+
+/**
+ * Generate category ranking text sorted by this_week_ratio descending
+ * Returns: { top3: "국내동향(29%), 해외동향(23%), 중국동향(20%)", bottom3: "기술·R&D(16%), 정책·규제(12%)" }
+ */
+export function generateCategoryRankingText(
+  categoryStats: Record<string, CategoryStat>
+): { top3: string; bottom3: string } {
+  // Convert to array and sort by this_week_ratio descending
+  const sorted = Object.entries(categoryStats)
+    .map(([categoryId, stat]) => ({
+      categoryId: Number(categoryId),
+      categoryName: CATEGORY_NAMES[Number(categoryId)] || '기타',
+      ratio: stat.this_week_ratio,
+    }))
+    .sort((a, b) => b.ratio - a.ratio);
+
+  // Format top 3
+  const top3 = sorted
+    .slice(0, 3)
+    .map(item => `${item.categoryName}(${Math.round(item.ratio)}%)`)
+    .join(', ');
+
+  // Format bottom 3
+  const bottom3 = sorted
+    .slice(-3)
+    .reverse()
+    .map(item => `${item.categoryName}(${Math.round(item.ratio)}%)`)
+    .join(', ');
+
+  return { top3, bottom3 };
+}
+
+/**
+ * Generate increase/decrease mention text
+ * Only includes categories where diff_ratio !== 0
+ * Returns: { increases: "국내동향(+15%)과 중국동향(+12%)", decreases: "정책·규제(+5%) 원자재·리스크(-3%)" }
+ */
+export function generateDiffRatioText(
+  categoryStats: Record<string, CategoryStat>
+): { increases: string; decreases: string } {
+  // Filter increases (diff_ratio > 0)
+  const increases = Object.entries(categoryStats)
+    .filter(([, stat]) => stat.diff_ratio > 0)
+    .map(([categoryId, stat]) => ({
+      categoryName: CATEGORY_NAMES[Number(categoryId)] || '기타',
+      ratio: stat.diff_ratio,
+    }))
+    .sort((a, b) => b.ratio - a.ratio);
+
+  // Filter decreases (diff_ratio < 0)
+  const decreases = Object.entries(categoryStats)
+    .filter(([, stat]) => stat.diff_ratio < 0)
+    .map(([categoryId, stat]) => ({
+      categoryName: CATEGORY_NAMES[Number(categoryId)] || '기타',
+      ratio: stat.diff_ratio,
+    }))
+    .sort((a, b) => a.ratio - b.ratio);
+
+  // Format increases text
+  const increasesText = increases.length > 0
+    ? increases
+        .map((item, index) => {
+          const connector = index === increases.length - 1 && increases.length > 1 ? '' : index === increases.length - 2 ? '과 ' : ', ';
+          return `${item.categoryName}(${item.ratio > 0 ? '+' : ''}${Math.round(item.ratio)}%)${connector}`;
+        })
+        .join('')
+        .replace(/, $/, '')
+    : '';
+
+  // Format decreases text
+  const decreasesText = decreases.length > 0
+    ? decreases
+        .map((item, index) => {
+          const connector = index === decreases.length - 1 && decreases.length > 1 ? '' : index === decreases.length - 2 ? ' ' : ', ';
+          return `${item.categoryName}(${Math.round(item.ratio)}%)${connector}`;
+        })
+        .join('')
+        .replace(/, $/, '')
+    : '';
+
+  return { increases: increasesText, decreases: decreasesText };
+}
+
+/**
+ * Calculate issue/news count delta and determine "증가" or "감소"
+ */
+export function calculateDelta(current: number, previous: number): {
+  delta: number;
+  text: string;
+} {
+  const delta = current - previous;
+  const absDelta = Math.abs(delta);
+  const text = delta >= 0 ? '증가' : '감소';
+  return { delta: absDelta, text };
 }

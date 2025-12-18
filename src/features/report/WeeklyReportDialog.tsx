@@ -22,11 +22,13 @@ import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useWeeklyReport } from '../../hooks/useWeeklyReport';
 import { aggregateReportStats, getTopClustersByCategory, formatWeekInfo } from '../../utils/reportHelpers';
-import { CATEGORY_MAP } from '../../types/report';
+import { CATEGORY_MAP, type ExecutiveSummaryData } from '../../types/report';
 import CoverPage from '../../features/report/CoverPage';
 import TableOfContentsPage from '../../features/report/TableOfContentsPage';
+import ExecutiveSummaryPage from '../../features/report/ExecutiveSummaryPage';
 import CategorySummaryPage from '../../features/report/CategorySummaryPage';
 import { generatePDF } from '../../utils/generatePDF';
+import { fetchExecutiveSummary } from '../../services/reportService';
 import type { WeeklyReportDialogProps } from '../../types/report';
 
 function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
@@ -37,6 +39,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0); // PDF generation progress (0-100)
   const [currentPage, setCurrentPage] = useState(1);
+  const [executiveSummaryData, setExecutiveSummaryData] = useState<ExecutiveSummaryData | null>(null);
 
   // Category pagination state: categoryId -> current page number
   const [categoryPages, setCategoryPages] = useState<Record<number, number>>({
@@ -50,7 +53,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
 
   // Calculate total pages dynamically
   const calculateTotalPages = () => {
-    if (clusters.length === 0) return 8; // 1 Cover + 1 TOC + 6 Category pages (empty)
+    if (clusters.length === 0) return 9; // 1 Cover + 1 TOC + 1 Executive Summary + 6 Category pages (empty)
 
     let categoryPages = 0;
     Object.keys(CATEGORY_MAP).forEach(categoryId => {
@@ -62,7 +65,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
       }
     });
 
-    return 1 + 1 + categoryPages; // Cover + TOC + Category pages
+    return 1 + 1 + 1 + categoryPages; // Cover + TOC + Executive Summary + Category pages
   };
 
   const totalPages = calculateTotalPages();
@@ -104,6 +107,20 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
     };
   }, [open, loading, error]);
 
+  // Fetch executive summary data
+  useEffect(() => {
+    if (open && date) {
+      fetchExecutiveSummary(date)
+        .then(response => {
+          setExecutiveSummaryData(response.data);
+        })
+        .catch(err => {
+          console.error('Failed to fetch executive summary:', err);
+          setExecutiveSummaryData(null);
+        });
+    }
+  }, [open, date]);
+
   // Preload images when dialog opens
   useEffect(() => {
     if (open && !loading && !error && clusters.length > 0) {
@@ -143,7 +160,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
 
   // Prepare table of contents categories with dynamic page numbers
   const tocCategories = (() => {
-    let currentPageNumber = 3; // 1 Cover + 1 TOC + start from 3
+    let currentPageNumber = 4; // 1 Cover + 1 TOC + 1 Executive Summary + start from 4
 
     if (pdfGenerating) {
       // PDF 모드: 각 카테고리가 클러스터 수에 따라 여러 페이지 차지
@@ -212,9 +229,9 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
   };
 
   const handleFirstPage = () => scrollToPage(1);
-  const handleLastPage = () => scrollToPage(8);
+  const handleLastPage = () => scrollToPage(totalPages);
   const handlePrevPage = () => scrollToPage(Math.max(currentPage - 1, 1));
-  const handleNextPage = () => scrollToPage(Math.min(currentPage + 1, 8));
+  const handleNextPage = () => scrollToPage(Math.min(currentPage + 1, totalPages));
 
   // Handle category page change
   const handleCategoryPageChange = (categoryId: number, page: number) => {
@@ -375,7 +392,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
             </IconButton>
           </Tooltip>
           <Typography variant="body2" sx={{ minWidth: '80px', textAlign: 'center' }}>
-            {currentPage} / 8
+            {currentPage} / {totalPages}
           </Typography>
           <Tooltip title="다음 페이지">
             <IconButton size="small" onClick={handleNextPage} disabled={currentPage === totalPages || loading}>
@@ -502,9 +519,14 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
               onNavigate={!pdfGenerating ? scrollToPage : undefined}
             />
 
+            {/* Executive Summary Page */}
+            {executiveSummaryData && (
+              <ExecutiveSummaryPage data={executiveSummaryData} />
+            )}
+
             {/* Category Summary Pages (1-6) */}
             {(() => {
-              let globalPageCounter = 3; // Cover(1) + TOC(2) + start from 3
+              let globalPageCounter = 4; // Cover(1) + TOC(2) + Executive Summary(3) + start from 4
 
               return Object.entries(CATEGORY_MAP).map(([categoryId, categoryLabel]) => {
                 const allClusters = getTopClustersByCategory(clusters, Number(categoryId), Infinity);

@@ -73,3 +73,33 @@ export interface CategorySummaryPageProps {
   globalPageNumber?: number; // Global PDF page number (for PDF mode only)
   pageId?: string; // Unique page identifier for navigation (e.g., "report-page-3")
 }
+
+// Executive Summary API types
+export interface CategoryStat {
+  this_week_count: number;
+  this_week_ratio: number;
+  last_week_count: number;
+  diff_ratio: number;
+}
+
+export interface ExecutiveSummaryData {
+  date: string;
+  prev_date: string;
+  this_week_issue_count: number;
+  this_week_news_count: number;
+  prev_week_issue_count: number;
+  prev_week_news_count: number;
+  top_clusters_titles: string[];
+  category_stats: Record<string, CategoryStat>;
+}
+
+export interface ExecutiveSummaryResponse {
+  success: boolean;
+  data: ExecutiveSummaryData;
+  error?: string;
+}
+
+// Executive Summary Page Props
+export interface ExecutiveSummaryPageProps {
+  data: ExecutiveSummaryData;
+}
