@@ -1,6 +1,6 @@
 import { Box, Typography, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import type { ExecutiveSummaryPageProps } from '../../types/report';
-import { CATEGORY_NAMES, generateCategoryRankingText, generateDiffRatioText, calculateDelta } from '../../utils/reportHelpers';
+import { CATEGORY_NAMES, generateCategoryRankingData, generateDiffRatioText, calculateDelta } from '../../utils/reportHelpers';
 import { CATEGORY_MAP } from '../../types/report';
 
 function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
@@ -11,8 +11,8 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
   const issueDelta = calculateDelta(data.this_week_issue_count, data.prev_week_issue_count);
   const newsDelta = calculateDelta(data.this_week_news_count, data.prev_week_news_count);
 
-  // Generate category ranking texts
-  const { top3, bottom3 } = generateCategoryRankingText(data.category_stats);
+  // Generate category ranking data
+  const { top3, bottom3 } = generateCategoryRankingData(data.category_stats);
 
   // Generate diff ratio texts
   const { increases, decreases } = generateDiffRatioText(data.category_stats);
@@ -122,7 +122,20 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
             mb: (!isFirstReport && (increases || decreases)) ? 2 : 0,
           }}
         >
-          {top3} 카테고리 순으로 높은 비중을 차지했고, {bottom3} 카테고리는 상대적으로 낮은 비중을 보였습니다.
+          {top3.map((item, idx) => (
+            <span key={`top3-${idx}`}>
+              <strong>{item.categoryName}</strong>({Math.round(item.ratio)}%)
+              {idx < top3.length - 1 && ', '}
+            </span>
+          ))}{' '}
+          카테고리 순으로 높은 비중을 차지했고,{' '}
+          {bottom3.map((item, idx) => (
+            <span key={`bottom3-${idx}`}>
+              <strong>{item.categoryName}</strong>({Math.round(item.ratio)}%)
+              {idx < bottom3.length - 1 && ', '}
+            </span>
+          ))}{' '}
+          카테고리는 상대적으로 낮은 비중을 보였습니다.
         </Typography>
 
         {/* Paragraph 4: Category diff_ratio analysis (only if there are changes and not first report) */}

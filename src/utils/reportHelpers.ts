@@ -121,6 +121,32 @@ export function getTopClustersByCategory(
     }));
 }
 
+export type CategoryRankingItem = {
+  categoryName: string;
+  ratio: number;
+};
+
+/**
+ * Generate category ranking data sorted by this_week_ratio descending
+ * Returns structured data for rendering with bold category names
+ */
+export function generateCategoryRankingData(
+  categoryStats: Record<string, CategoryStat>
+): { top3: CategoryRankingItem[]; bottom3: CategoryRankingItem[] } {
+  // Convert to array and sort by this_week_ratio descending
+  const sorted = Object.entries(categoryStats)
+    .map(([categoryId, stat]) => ({
+      categoryName: CATEGORY_NAMES[Number(categoryId)] || '기타',
+      ratio: stat.this_week_ratio,
+    }))
+    .sort((a, b) => b.ratio - a.ratio);
+
+  return {
+    top3: sorted.slice(0, 3),
+    bottom3: sorted.slice(-3),
+  };
+}
+
 /**
  * Generate category ranking text sorted by this_week_ratio descending
  * Returns: { top3: "국내동향(29%), 해외동향(23%), 중국동향(20%)", bottom3: "기술·R&D(16%), 정책·규제(12%)" }
