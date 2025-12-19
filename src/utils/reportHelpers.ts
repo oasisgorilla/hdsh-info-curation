@@ -146,7 +146,6 @@ export function generateCategoryRankingText(
   // Format bottom 3
   const bottom3 = sorted
     .slice(-3)
-    .reverse()
     .map(item => `${item.categoryName}(${Math.round(item.ratio)}%)`)
     .join(', ');
 
