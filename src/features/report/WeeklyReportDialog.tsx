@@ -16,10 +16,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import DownloadIcon from '@mui/icons-material/Download';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import FirstPageIcon from '@mui/icons-material/FirstPage';
-import LastPageIcon from '@mui/icons-material/LastPage';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import { useWeeklyReport } from '../../hooks/useWeeklyReport';
 import { aggregateReportStats, getTopClustersByCategory, formatWeekInfo } from '../../utils/reportHelpers';
 import { CATEGORY_MAP, type ExecutiveSummaryData } from '../../types/report';
@@ -38,7 +34,6 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
   const [scale, setScale] = useState(0.62);
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [pdfProgress, setPdfProgress] = useState(0); // PDF generation progress (0-100)
-  const [currentPage, setCurrentPage] = useState(1);
   const [executiveSummaryData, setExecutiveSummaryData] = useState<ExecutiveSummaryData | null>(null);
 
   // Category pagination state: categoryId -> current page number
@@ -50,25 +45,6 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
     5: 1, // 기술·R&D
     6: 1, // 정책·규제
   });
-
-  // Calculate total pages dynamically
-  const calculateTotalPages = () => {
-    if (clusters.length === 0) return 9; // 1 Cover + 1 TOC + 1 Executive Summary + 6 Category pages (empty)
-
-    let categoryPages = 0;
-    Object.keys(CATEGORY_MAP).forEach(categoryId => {
-      const categoryClusters = clusters.filter(c => c.category_id === Number(categoryId));
-      if (categoryClusters.length === 0) {
-        categoryPages += 1; // 빈 페이지
-      } else {
-        categoryPages += Math.ceil(categoryClusters.length / 3); // 3개씩 분할
-      }
-    });
-
-    return 1 + 1 + 1 + categoryPages; // Cover + TOC + Executive Summary + Category pages
-  };
-
-  const totalPages = calculateTotalPages();
 
   // Calculate dynamic scale based on container height
   useEffect(() => {
@@ -204,7 +180,7 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
     setScale((prev) => Math.max(prev - 0.1, 0.3));
   };
 
-  // Page navigation handlers
+  // Page navigation handler (used by TOC)
   const scrollToPage = (pageNumber: number) => {
     if (!contentRef.current || !reportRef.current) return;
 
@@ -214,7 +190,6 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
 
     if (targetPage) {
       targetPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      setCurrentPage(pageNumber);
     } else {
       // Fallback to old method if ID not found
       const pages = reportRef.current.querySelectorAll('.report-page');
@@ -223,15 +198,9 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
       const fallbackPage = pages[pageNumber - 1];
       if (fallbackPage) {
         fallbackPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        setCurrentPage(pageNumber);
       }
     }
   };
-
-  const handleFirstPage = () => scrollToPage(1);
-  const handleLastPage = () => scrollToPage(totalPages);
-  const handlePrevPage = () => scrollToPage(Math.max(currentPage - 1, 1));
-  const handleNextPage = () => scrollToPage(Math.min(currentPage + 1, totalPages));
 
   // Handle category page change
   const handleCategoryPageChange = (categoryId: number, page: number) => {
@@ -375,35 +344,6 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
           <Typography variant="body2" sx={{ minWidth: '50px', textAlign: 'center' }}>
             {Math.round(scale * 100)}%
           </Typography>
-        </Box>
-
-        <Divider orientation="vertical" flexItem sx={{ mx: 1 }} />
-
-        {/* Page Navigation */}
-        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
-          <Tooltip title="첫 페이지">
-            <IconButton size="small" onClick={handleFirstPage} disabled={currentPage === 1 || loading}>
-              <FirstPageIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="이전 페이지">
-            <IconButton size="small" onClick={handlePrevPage} disabled={currentPage === 1 || loading}>
-              <KeyboardArrowUpIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Typography variant="body2" sx={{ minWidth: '80px', textAlign: 'center' }}>
-            {currentPage} / {totalPages}
-          </Typography>
-          <Tooltip title="다음 페이지">
-            <IconButton size="small" onClick={handleNextPage} disabled={currentPage === totalPages || loading}>
-              <KeyboardArrowDownIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="마지막 페이지">
-            <IconButton size="small" onClick={handleLastPage} disabled={currentPage === totalPages || loading}>
-              <LastPageIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
         </Box>
 
         <Box sx={{ flexGrow: 1 }} />
