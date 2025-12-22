@@ -1,4 +1,4 @@
-import { Box, Typography, Chip, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import type { ExecutiveSummaryPageProps } from '../../types/report';
 import { CATEGORY_NAMES, generateCategoryRankingData, generateDiffRatioText, calculateDelta } from '../../utils/reportHelpers';
 import { CATEGORY_MAP } from '../../types/report';
@@ -315,26 +315,19 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
                           -
                         </Typography>
                       ) : (
-                        <Chip
-                          label={`${diffRatio > 0 ? '+' : ''}${Math.round(diffRatio)}%`}
-                          size="small"
+                        <Typography
+                          variant="body2"
                           sx={{
-                            bgcolor: isPositive
-                              ? '#E8F5E9'
-                              : isNegative
-                              ? '#FFEBEE'
-                              : 'grey.200',
                             color: isPositive
                               ? '#2E7D32'
                               : isNegative
                               ? '#C62828'
                               : 'text.secondary',
-                            fontWeight: 600,
-                            fontSize: '0.75rem',
-                            height: '24px',
-                            minWidth: '60px',
+                            fontWeight: 700,
                           }}
-                        />
+                        >
+                          {diffRatio > 0 ? '+' : ''}{Math.round(diffRatio)}%
+                        </Typography>
                       )}
                     </TableCell>
                     <TableCell
