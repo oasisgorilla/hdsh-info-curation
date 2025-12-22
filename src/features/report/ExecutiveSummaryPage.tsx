@@ -1,6 +1,6 @@
 import { Box, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import type { ExecutiveSummaryPageProps } from '../../types/report';
-import { CATEGORY_NAMES, generateCategoryRankingData, generateDiffRatioText, calculateDelta } from '../../utils/reportHelpers';
+import { CATEGORY_NAMES, generateCategoryRankingData, calculateDelta } from '../../utils/reportHelpers';
 import { CATEGORY_MAP } from '../../types/report';
 
 function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
@@ -13,9 +13,6 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
 
   // Generate category ranking data
   const { top3, bottom3 } = generateCategoryRankingData(data.category_stats);
-
-  // Generate diff ratio texts
-  const { increases, decreases } = generateDiffRatioText(data.category_stats);
 
   return (
     <Box
@@ -35,7 +32,7 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
       {/* Header with logo */}
       <Box
         sx={{
-          mb: 3,
+          mb: 1,
           display: 'flex',
           justifyContent: 'flex-end',
           alignItems: 'flex-start',
@@ -82,129 +79,155 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
       </Box>
 
       {/* Statistical Summary Text */}
-      <Box
-        sx={{
-          bgcolor: 'grey.50',
-          p: 3,
-          borderRadius: 2,
-          mb: 2,
-        }}
-      >
-        {/* Paragraph 1: Issue and news count summary */}
-        <Typography
-          variant="body1"
-          sx={{
-            lineHeight: 1.8,
-            mb: 2,
-          }}
-        >
-          금주 조선업 주요 이슈는 총 <strong>{data.this_week_issue_count}건</strong>으로 집계되었으며, 관련 뉴스는 총 <strong>{data.this_week_news_count}건</strong> 보도되었습니다.
-        </Typography>
-
-        {/* Paragraph 2: Week-over-week comparison (only if previous week data exists) */}
-        {!isFirstReport && (
-          <Typography
-            variant="body1"
-            sx={{
-              lineHeight: 1.8,
-              mb: 2,
-            }}
-          >
-            전 주 대비 조선업 이슈는 <strong>{issueDelta.delta}건 {issueDelta.text}</strong> 했으며, 관련 뉴스는 총 <strong>{newsDelta.delta}건 {newsDelta.text}</strong> 했습니다.
-          </Typography>
-        )}
-
-        {/* Paragraph 3: Category ranking by ratio */}
-        <Typography
-          variant="body1"
-          sx={{
-            lineHeight: 1.8,
-            mb: (!isFirstReport && (increases || decreases)) ? 2 : 0,
-          }}
-        >
-          {top3.map((item, idx) => (
-            <span key={`top3-${idx}`}>
-              <strong>{item.categoryName}</strong>({Math.round(item.ratio)}%)
-              {idx < top3.length - 1 && ', '}
-            </span>
-          ))}{' '}
-          카테고리 순으로 높은 비중을 차지했고,{' '}
-          {bottom3.map((item, idx) => (
-            <span key={`bottom3-${idx}`}>
-              <strong>{item.categoryName}</strong>({Math.round(item.ratio)}%)
-              {idx < bottom3.length - 1 && ', '}
-            </span>
-          ))}{' '}
-          카테고리는 상대적으로 낮은 비중을 보였습니다.
-        </Typography>
-
-        {/* Paragraph 4: Category diff_ratio analysis (only if there are changes and not first report) */}
-        {!isFirstReport && (() => {
-          const increasesCount = Object.values(data.category_stats).filter(s => s.diff_ratio > 0).length;
-          const decreasesCount = Object.values(data.category_stats).filter(s => s.diff_ratio < 0).length;
-          const totalCategories = Object.keys(data.category_stats).length;
-
-          let diffRatioText = '';
-
-          if (increasesCount === totalCategories) {
-            // All categories increased
-            diffRatioText = '전체 카테고리가 전주 대비 증가했습니다.';
-          } else if (decreasesCount === totalCategories) {
-            // All categories decreased
-            diffRatioText = '전체 카테고리가 전주 대비 감소했습니다.';
-          } else if (increasesCount > 0 && decreasesCount > 0) {
-            // Mixed: some increased, some decreased
-            diffRatioText = `${increases} 카테고리에서 뉴스 건수 증가가 나타났으며, ${decreases} 카테고리는 전주 대비 감소했습니다.`;
-          } else if (increasesCount > 0) {
-            // Only increases (some categories)
-            diffRatioText = `${increases} 카테고리에서 뉴스 건수 증가가 나타났습니다.`;
-          } else if (decreasesCount > 0) {
-            // Only decreases (some categories)
-            diffRatioText = `${decreases} 카테고리는 전주 대비 감소했습니다.`;
-          }
-
-          if (!diffRatioText) return null;
-
-          return (
-            <Typography
-              variant="body1"
-              sx={{
-                lineHeight: 1.8,
-              }}
-            >
-              {diffRatioText}
-            </Typography>
-          );
-        })()}
-      </Box>
-
-      {/* Top 4 Issues Section */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 2 }}>
         <Typography
           variant="h6"
           sx={{
             fontWeight: 700,
-            mb: 2,
+            mb: 1,
           }}
         >
-          금주 최다 보도 이슈 4건
+          개요
         </Typography>
-        <Box component="ul" sx={{ pl: 3, m: 0 }}>
-          {data.top_clusters_titles.slice(0, 4).map((title, index) => (
+        <Box
+          sx={{
+            bgcolor: 'grey.100',
+            p: 2,
+            borderRadius: 1,
+          }}
+        >
+          <Box component="ul" sx={{ pl: 3, m: 0 }}>
+            {/* Paragraph 1: Issue and news count summary */}
             <Typography
-              key={index}
               component="li"
               variant="body1"
               sx={{
-                mb: 0.5,
                 lineHeight: 1.6,
+                mb: 0.5,
               }}
             >
-              {title}
+              금주 조선업 관련 뉴스는 총 <strong>{data.this_week_news_count}건</strong> 보도되었으며, 이를 바탕으로 주요 이슈 <strong>{data.this_week_issue_count}건</strong>이 도출되었습니다. 
             </Typography>
-          ))}
+
+            {/* Paragraph 2: Week-over-week comparison (only if previous week data exists) */}
+            {!isFirstReport && (
+              <Typography
+                component="li"
+                variant="body1"
+                sx={{
+                  lineHeight: 1.6,
+                  mb: 0.5,
+                }}
+              >
+                지난주 대비 조선업 관련 뉴스는 <strong>{newsDelta.delta}건 {newsDelta.text}</strong> 했으며, 주요 이슈는 <strong>{issueDelta.delta}건 {issueDelta.text}</strong>한 것으로 나타났습니다.
+              </Typography>
+            )}
+
+            {/* Paragraph 3: Category ranking by ratio */}
+            <Typography
+              component="li"
+              variant="body1"
+              sx={{
+                lineHeight: 1.6,
+                mb: 0.5,
+              }}
+            >
+              카테고리별로는{' '}
+              {top3.map((item, idx) => (
+                <span key={`top3-${idx}`}>
+                  <strong>{item.categoryName}</strong>({Math.round(item.ratio)}%)
+                  {idx < top3.length - 1 && ', '}
+                </span>
+              ))}{' '}
+              순으로 높은 비중을 차지했으며,<br />
+              {bottom3.map((item, idx) => (
+                <span key={`bottom3-${idx}`}>
+                  <strong>{item.categoryName}</strong>({Math.round(item.ratio)}%)
+                  {idx < bottom3.length - 1 && ', '}
+                </span>
+              ))}{' '}
+              순으로 나타났습니다.
+            </Typography>
+          </Box>
         </Box>
       </Box>
+
+      {/* Top Issues Section */}
+      {/* Foreign Top Issues */}
+      {data.foreign_top_clusters_titles && data.foreign_top_clusters_titles.length > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              mb: 1,
+            }}
+          >
+            주요 해외 이슈 3건
+          </Typography>
+          <Box
+            sx={{
+              bgcolor: 'grey.100',
+              p: 2,
+              borderRadius: 1,
+            }}
+          >
+            <Box component="ul" sx={{ pl: 3, m: 0 }}>
+              {data.foreign_top_clusters_titles.map((title, index) => (
+                <Typography
+                  key={index}
+                  component="li"
+                  variant="body1"
+                  sx={{
+                    mb: 0.5,
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {title}
+                </Typography>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+      )}
+      {/* Korean Top Issues */}
+      {data.korean_top_clusters_titles && data.korean_top_clusters_titles.length > 0 && (
+        <Box sx={{ mb: 2 }}>
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: 700,
+              mb: 1,
+            }}
+          >
+            주요 국내 이슈 3건
+          </Typography>
+          <Box
+            sx={{
+              bgcolor: 'grey.100',
+              p: 2,
+              borderRadius: 1,
+            }}
+          >
+            <Box component="ul" sx={{ pl: 3, m: 0 }}>
+              {data.korean_top_clusters_titles.map((title, index) => (
+                <Typography
+                  key={index}
+                  component="li"
+                  variant="body1"
+                  sx={{
+                    mb: 0.5,
+                    lineHeight: 1.6,
+                  }}
+                >
+                  {title}
+                </Typography>
+              ))}
+            </Box>
+          </Box>
+        </Box>
+      )}
+
 
       {/* Category Statistics Table */}
       <Box>
@@ -231,7 +254,7 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
                     fontWeight: 700,
                     border: '1px solid',
                     borderColor: 'grey.300',
-                    py: 1.5,
+                    py: 1.2,
                   }}
                 >
                   카테고리
@@ -242,7 +265,7 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
                     fontWeight: 700,
                     border: '1px solid',
                     borderColor: 'grey.300',
-                    py: 1.5,
+                    py: 1.2,
                   }}
                 >
                   뉴스 건수
@@ -253,7 +276,7 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
                     fontWeight: 700,
                     border: '1px solid',
                     borderColor: 'grey.300',
-                    py: 1.5,
+                    py: 1.2,
                   }}
                 >
                   전주 대비
@@ -264,7 +287,7 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
                     fontWeight: 700,
                     border: '1px solid',
                     borderColor: 'grey.300',
-                    py: 1.5,
+                    py: 1.2,
                   }}
                 >
                   비율
@@ -286,7 +309,7 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
                       sx={{
                         border: '1px solid',
                         borderColor: 'grey.300',
-                        py: 1.5,
+                        py: 1.2,
                       }}
                     >
                       {CATEGORY_NAMES[Number(categoryId)]}
@@ -296,7 +319,7 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
                       sx={{
                         border: '1px solid',
                         borderColor: 'grey.300',
-                        py: 1.5,
+                        py: 1.2,
                         fontWeight: 600,
                       }}
                     >
@@ -307,7 +330,7 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
                       sx={{
                         border: '1px solid',
                         borderColor: 'grey.300',
-                        py: 1.5,
+                        py: 1.2,
                       }}
                     >
                       {isFirstReport ? (

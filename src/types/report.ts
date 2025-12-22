@@ -89,7 +89,8 @@ export interface ExecutiveSummaryData {
   this_week_news_count: number;
   prev_week_issue_count: number;
   prev_week_news_count: number;
-  top_clusters_titles: string[];
+  korean_top_clusters_titles: string[];
+  foreign_top_clusters_titles: string[];
   category_stats: Record<string, CategoryStat>;
 }
 
