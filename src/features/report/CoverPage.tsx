@@ -113,7 +113,7 @@ function CoverPage({ weekNumber, dateRange, totalNews, totalIssues }: CoverPageP
                 color: 'primary.main',
               }}
             >
-              {totalNews.toLocaleString()}
+              {(totalNews ?? 0).toLocaleString()}
             </Typography>
             <Typography
               variant="body1"
@@ -149,7 +149,7 @@ function CoverPage({ weekNumber, dateRange, totalNews, totalIssues }: CoverPageP
                 color: 'secondary.main',
               }}
             >
-              {totalIssues.toLocaleString()}
+              {(totalIssues ?? 0).toLocaleString()}
             </Typography>
             <Typography
               variant="body1"

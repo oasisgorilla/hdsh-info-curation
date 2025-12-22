@@ -49,8 +49,8 @@ export interface WeeklyReportDialogProps {
 export interface CoverPageProps {
   weekNumber: number;
   dateRange: string; // "YYYY.MM.DD ~ YYYY.MM.DD"
-  totalNews: number;
-  totalIssues: number;
+  totalNews: number | undefined;
+  totalIssues: number | undefined;
 }
 
 // Table of Contents Props

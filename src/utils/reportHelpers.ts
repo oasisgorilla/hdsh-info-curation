@@ -93,15 +93,6 @@ export function formatWeekInfo(dateString: string): { weekNumber: number; dateRa
 }
 
 /**
- * Aggregate total news and issues from clusters
- */
-export function aggregateReportStats(clusters: ClusteredNewsRead[]): { totalNews: number; totalIssues: number } {
-  const totalNews = clusters.reduce((sum, cluster) => sum + cluster.items.length, 0);
-  const totalIssues = clusters.length;
-  return { totalNews, totalIssues };
-}
-
-/**
  * Get top N clusters for a specific category, sorted by score
  * Optionally limits news items per cluster
  */

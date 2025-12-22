@@ -17,7 +17,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
 import { useWeeklyReport } from '../../hooks/useWeeklyReport';
-import { aggregateReportStats, getTopClustersByCategory, formatWeekInfo } from '../../utils/reportHelpers';
+import { getTopClustersByCategory, formatWeekInfo } from '../../utils/reportHelpers';
 import { CATEGORY_MAP, type ExecutiveSummaryData } from '../../types/report';
 import CoverPage from '../../features/report/CoverPage';
 import TableOfContentsPage from '../../features/report/TableOfContentsPage';
@@ -128,11 +128,6 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
 
   // Format week info
   const { weekNumber, dateRange } = formatWeekInfo(date);
-
-  // Aggregate stats
-  const { totalNews, totalIssues } = clusters.length > 0
-    ? aggregateReportStats(clusters)
-    : { totalNews: 0, totalIssues: 0 };
 
   // Prepare table of contents categories with dynamic page numbers
   const tocCategories = (() => {
@@ -254,9 +249,6 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
     const originalTransformOrigin = reportRef.current.style.transformOrigin;
 
     try {
-      console.log('=== PDF Generation Started ===');
-      console.log('Total clusters:', clusters.length);
-
       // Remove transform to get actual size
       reportRef.current.style.transform = 'none';
       reportRef.current.style.transformOrigin = 'top center';
@@ -448,8 +440,8 @@ function WeeklyReportDialog({ open, onClose, date }: WeeklyReportDialogProps) {
             <CoverPage
               weekNumber={weekNumber}
               dateRange={dateRange}
-              totalNews={totalNews}
-              totalIssues={totalIssues}
+              totalNews={executiveSummaryData?.this_week_news_count}
+              totalIssues={executiveSummaryData?.this_week_issue_count}
             />
 
             {/* Table of Contents */}
