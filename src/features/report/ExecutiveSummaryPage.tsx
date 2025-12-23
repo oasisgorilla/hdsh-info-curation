@@ -163,7 +163,7 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
               mb: 1,
             }}
           >
-            주요 해외 이슈 3건
+            해외 이슈 TOP 3
           </Typography>
           <Box
             sx={{
@@ -200,7 +200,7 @@ function ExecutiveSummaryPage({ data }: ExecutiveSummaryPageProps) {
               mb: 1,
             }}
           >
-            주요 국내 이슈 3건
+            국내 이슈 TOP 3
           </Typography>
           <Box
             sx={{
